@@ -1,0 +1,6 @@
+# Work to do
+
+* documentation
+* GUI 
+* batch job for Windows truststore
+* wrap at least /Trust and /Distrust in AuthZ
