@@ -64,7 +64,14 @@ def add_certificate():
 @certificates_bp.route('/Certificates', methods=['GET'])
 def get_certificates():
     certificates = Certificate.query.all()
-    return [cert.subject for cert in certificates], 200
+    return [{
+        'id': cert.id,
+        'subject': cert.subject,
+        'validFrom': cert.valid_from.strftime('%Y-%m-%d'),
+        'validTo': cert.valid_to.strftime('%Y-%m-%d'),
+        'serial': cert.serial,
+        'fingerprint': cert.fingerprint
+    } for cert in certificates], 200
 
 @certificates_bp.route('/Trust', methods=['POST'])
 def trust_certificate():
