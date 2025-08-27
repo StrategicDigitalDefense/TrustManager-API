@@ -1,4 +1,4 @@
-# Flask Certificates API
+# TrustManager API
 
 TrustManager API is a tool to help enterprises and agencies organize and manage roots of trust for a PKI in a consistent manner. At its core, TrustManager API is a simple RESTful API built using Flask, which manages trust for digital certificates. The API allows users to add, retrieve, and manage certificates, including toggling their trust status. It further provides a feed of trusted certificates, enabling application/platform/server owners to get notified of trust changes. Lastly, TrustManager API includes batch jobs to build truststores in common formats/structures, to easily communicate trust to applications and operating systems. 
 
