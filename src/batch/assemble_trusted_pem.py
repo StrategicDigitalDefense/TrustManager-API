@@ -1,6 +1,9 @@
 import os
-from ..db.database import db_session
-from ..models.certificates import Certificate
+import sys
+sys.path.append('../db')
+sys.path.append('../models')
+from db.database import db_session
+from models.certificates import Certificate
 
 OUTPUT_PATH = "trusted_certs.pem"
 

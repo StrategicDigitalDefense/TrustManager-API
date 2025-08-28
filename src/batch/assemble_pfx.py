@@ -1,8 +1,11 @@
 import os
+import sys
+sys.path.append('../db')
+sys.path.append('../models')
 import subprocess
 import tempfile
-from ..db.database import db_session
-from ..models.certificates import Certificate
+from db.database import db_session
+from models.certificates import Certificate
 
 PFX_PATH = "trusted_certs.pfx"
 PFX_PASSWORD = "changeit"

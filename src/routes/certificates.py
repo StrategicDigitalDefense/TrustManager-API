@@ -1,8 +1,8 @@
-from flask import Blueprint, request, jsonify, Response, url_for, send_file
+from flask import Blueprint, request, jsonify, Response, url_for, send_file # type: ignore
 from datetime import datetime
-from cryptography import x509
-from cryptography.hazmat.primitives import hashes, serialization
-from cryptography.hazmat.backends import default_backend
+from cryptography import x509 # type: ignore
+from cryptography.hazmat.primitives import hashes, serialization # type: ignore
+from cryptography.hazmat.backends import default_backend # type: ignore
 from xml.sax.saxutils import escape
 import sys
 import os

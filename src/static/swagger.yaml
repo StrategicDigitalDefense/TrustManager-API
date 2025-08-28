@@ -1,0 +1,281 @@
+openapi: 3.0.3
+info:
+  title: TrustManager API
+  description: API for managing and distributing trusted certificates and truststores.
+  version: "1.0.0"
+servers:
+  - url: http://localhost:5100
+
+paths:
+  /Certificate:
+    put:
+      summary: Add a new certificate
+      requestBody:
+        required: true
+        content:
+          text/plain:
+            schema:
+              type: string
+              description: PEM-encoded certificate
+      responses:
+        '201':
+          description: Certificate added successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+        '400':
+          description: Invalid input or parsing error
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+
+  /Certificates:
+    get:
+      summary: Get all certificates
+      responses:
+        '200':
+          description: List of certificates
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/CertificateSummary'
+
+  /Trust:
+    post:
+      summary: Trust a certificate (only self-signed)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                id:
+                  type: integer
+      responses:
+        '200':
+          description: Certificate trusted successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+        '400':
+          description: Missing certificate ID
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+        '403':
+          description: Certificate is not self-signed
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+        '404':
+          description: Certificate not found
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+
+  /Distrust:
+    post:
+      summary: Distrust a certificate
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                id:
+                  type: integer
+      responses:
+        '200':
+          description: Certificate distrusted successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+        '400':
+          description: Missing certificate ID
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+        '404':
+          description: Certificate not found
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+
+  /Certificate/serial/{serial}:
+    get:
+      summary: Get certificate by serial number
+      parameters:
+        - name: serial
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: PEM-encoded certificate
+          content:
+            application/json:
+              schema:
+                type: string
+        '404':
+          description: Certificate not found
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+
+  /Certificate/subject/{subject}:
+    get:
+      summary: Get certificate(s) by subject (full or partial)
+      parameters:
+        - name: subject
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: List of PEM-encoded certificates
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: string
+        '404':
+          description: No certificates found
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+
+  /Certificate/fingerprint/{fingerprint}:
+    get:
+      summary: Get certificate by fingerprint
+      parameters:
+        - name: fingerprint
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: PEM-encoded certificate
+          content:
+            application/json:
+              schema:
+                type: string
+        '404':
+          description: Certificate not found
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+
+  /Certificates/atom:
+    get:
+      summary: Get ATOM feed of trusted certificates
+      responses:
+        '200':
+          description: ATOM XML feed
+          content:
+            application/atom+xml:
+              schema:
+                type: string
+
+  /Truststore/{format}:
+    get:
+      summary: Download truststore file in specified format
+      parameters:
+        - name: format
+          in: path
+          required: true
+          schema:
+            type: string
+            enum: [jks, pfx, pem, rpm]
+      responses:
+        '200':
+          description: Truststore file
+          content:
+            application/octet-stream:
+              schema:
+                type: string
+                format: binary
+        '404':
+          description: Truststore file not found
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+
+components:
+  schemas:
+    CertificateSummary:
+      type: object
+      properties:
+        id:
+          type: integer
+        subject:
+          type: string
+        validFrom:
+          type: string
+          format: date
+        validTo:
+          type: string
+          format: date
+        serial:
+          type: string
+        fingerprint:
+          type:

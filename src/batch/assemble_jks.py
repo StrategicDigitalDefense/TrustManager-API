@@ -1,8 +1,11 @@
 import os
+import sys
 import subprocess
 import tempfile
-from ..db.database import db_session
-from ..models.certificates import Certificate
+sys.path.append('../db')
+sys.path.append('../models')
+from db.database import db_session
+from models.certificates import Certificate
 
 JKS_PATH = "trusted_certs.jks"
 JKS_PASSWORD = "changeit"
