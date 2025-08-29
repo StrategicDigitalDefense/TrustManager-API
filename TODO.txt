@@ -4,3 +4,5 @@
 * GUI 
 * batch job for Windows truststore
 * wrap at least /Trust and /Distrust in AuthZ
+* switch from SQLite3 to instead a real database, like SQL Svr, Oracle, PostGres
+* instructions to run inside a WSGI server, instead of the built-in development webserver
