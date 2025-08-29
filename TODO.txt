@@ -2,6 +2,7 @@
 
 * documentation
 * GUI 
+    ** Decision: Native WPF/WinForms in PowerShell, or web GUI
 * batch job for Windows truststore
 * wrap at least /Trust and /Distrust in AuthZ
 * switch from SQLite3 to instead a real database, like SQL Svr, Oracle, PostGres
