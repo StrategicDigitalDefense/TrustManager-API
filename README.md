@@ -130,6 +130,6 @@ curl -X GET http://localhost:5100/Certificates/atom
 
 ## License
 
-This project is licensed under the BSD License.
+This project is licensed under the [BSD License](license.txt).
 
 Swagger (interactive API documentation) licensed under the terms [here](https://swagger.io/license/). 
