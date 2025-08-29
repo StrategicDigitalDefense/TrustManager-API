@@ -1,4 +1,4 @@
-from flask import Flask
+from flask import Flask # type: ignore
 from db.database import db
 from models.certificates import Certificate  # <-- Import your model here!
 from routes.certificates import certificates_bp

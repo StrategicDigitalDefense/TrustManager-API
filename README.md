@@ -128,8 +128,26 @@ curl -X POST -H "Content-Type: application/json" -d '{"id": 1}' http://localhost
 curl -X GET http://localhost:5100/Certificates/atom
 ```
 
+## Web-based Admin GUI
+
+A simple web GUI is available for administrators at [http://localhost:5100/admin](http://localhost:5100/admin).
+
+**Features:**
+- Add new certificates
+- View and search all certificates
+- Trust/distrust certificates (with self-signed check)
+- Download truststore files (JKS, PFX, PEM, RPM)
+- View ATOM feed of trusted certificates
+
+**How to use:**
+1. Start the Flask API.
+2. Open [http://localhost:5100/admin](http://localhost:5100/admin) in your browser.
+3. Use the interface to manage certificates and truststores.
+
+Static files for the GUI are located in the `static/` folder.
+
 ## License
 
 This project is licensed under the [BSD License](license.txt).
 
-Swagger (interactive API documentation) licensed under the terms [here](https://swagger.io/license/). 
+Swagger (interactive API documentation) licensed under the terms [here](https://swagger.io/license/).

@@ -1,0 +1,50 @@
+body {
+    font-family: Arial, sans-serif;
+    margin: 2em;
+    background: #f7f7f7;
+}
+h1 {
+    color: #2c3e50;
+}
+section {
+    background: #fff;
+    padding: 1em;
+    margin-bottom: 2em;
+    border-radius: 8px;
+    box-shadow: 0 2px 6px #ccc;
+}
+table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 1em;
+}
+th, td {
+    border: 1px solid #ddd;
+    padding: 0.5em;
+    text-align: left;
+}
+th {
+    background: #eee;
+}
+button {
+    padding: 0.5em 1em;
+    margin: 0.2em;
+    border: none;
+    background: #3498db;
+    color: #fff;
+    border-radius: 4px;
+    cursor: pointer;
+}
+button:hover {
+    background: #2980b9;
+}
+input[type="text"], textarea {
+    padding: 0.5em;
+    border-radius: 4px;
+    border: 1px solid #ccc;
+    margin-bottom: 0.5em;
+}
+#addCertMsg, #certMsg {
+    margin-top: 0.5em;
+    color: #e74c3c;
+}

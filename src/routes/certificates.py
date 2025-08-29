@@ -1,4 +1,4 @@
-from flask import Blueprint, request, jsonify, Response, url_for, send_file # type: ignore
+from flask import Blueprint, request, jsonify, Response, url_for, send_file, send_from_directory # type: ignore
 from datetime import datetime
 from cryptography import x509 # type: ignore
 from cryptography.hazmat.primitives import hashes, serialization # type: ignore
@@ -173,3 +173,12 @@ def get_truststore_file(format):
     if not filename or not os.path.exists(filename):
         return jsonify({'error': f'Truststore file for format "{format}" not found.'}), 404
     return send_file(filename, as_attachment=True)
+
+@certificates_bp.route('/admin')
+def admin_gui():
+    return send_from_directory('static', 'index.html')
+
+#@certificates_bp.route('/swagger')
+#def swagger_ui():
+#    return send_from_directory('static', 'swagger.html')
+#

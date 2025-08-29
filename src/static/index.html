@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>TrustManager Admin GUI</title>
+    <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+    <h1>TrustManager Admin GUI</h1>
+    <section>
+        <h2>Add Certificate</h2>
+        <textarea id="pemInput" rows="6" cols="60" placeholder="Paste PEM certificate here"></textarea><br>
+        <button onclick="addCertificate()">Add Certificate</button>
+        <div id="addCertMsg"></div>
+    </section>
+    <section>
+        <h2>Certificates</h2>
+        <button onclick="fetchCertificates()">Refresh List</button>
+        <input type="text" id="searchInput" placeholder="Search by subject, serial, or fingerprint" oninput="searchCertificates()">
+        <table id="certTable">
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Subject</th>
+                    <th>Issuer</th>
+                    <th>Serial</th>
+                    <th>Valid From</th>
+                    <th>Valid To</th>
+                    <th>Trusted</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody></tbody>
+        </table>
+        <div id="certMsg"></div>
+    </section>
+    <section>
+        <h2>Download Truststores</h2>
+        <ul>
+            <li><a href="/Truststore/jks" download>Java KeyStore (JKS)</a></li>
+            <li><a href="/Truststore/pfx" download>PKCS#12 (PFX)</a></li>
+            <li><a href="/Truststore/pem" download>Concatenated PEM</a></li>
+            <li><a href="/Truststore/rpm" download>RPM Package</a></li>
+        </ul>
+    </section>
+    <section>
+        <h2>ATOM Feed</h2>
+        <a href="/Certificates/atom" target="_blank">View ATOM Feed</a>
+    </section>
+    <script src="/static/app.js"></script>
+</body>
+</html>
