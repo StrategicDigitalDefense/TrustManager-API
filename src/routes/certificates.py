@@ -70,7 +70,8 @@ def get_certificates():
         'validFrom': cert.valid_from.strftime('%Y-%m-%d'),
         'validTo': cert.valid_to.strftime('%Y-%m-%d'),
         'serial': cert.serial,
-        'fingerprint': cert.fingerprint
+        'fingerprint': cert.fingerprint,
+        'trusted': cert.trusted
     } for cert in certificates], 200
 
 @certificates_bp.route('/Trust', methods=['POST'])

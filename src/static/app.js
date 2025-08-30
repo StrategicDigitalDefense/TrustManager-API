@@ -35,14 +35,13 @@ function renderCertTable(certificates) {
         tr.innerHTML = `
             <td>${cert.id}</td>
             <td>${cert.subject}</td>
-            <td>${cert.issuer}</td>
             <td>${cert.serial}</td>
-            <td>${cert.valid_from}</td>
-            <td>${cert.valid_to}</td>
+            <td>${cert.validFrom}</td>
+            <td>${cert.validTo}</td>
             <td>${cert.trusted ? 'Yes' : 'No'}</td>
             <td>
-                <button onclick="trustCert(${cert.id})" ${cert.trusted || cert.subject !== cert.issuer ? 'disabled' : ''}>Trust</button>
-                <button onclick="distrustCert(${cert.id})" ${!cert.trusted ? 'disabled' : ''}>Distrust</button>
+                <button onclick="trustCert(${cert.id})" >Trust</button>
+                <button onclick="distrustCert(${cert.id})" >Distrust</button>
             </td>
         `;
         tbody.appendChild(tr);
