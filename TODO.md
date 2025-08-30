@@ -9,7 +9,11 @@
     * I know you can distribute Group Policy in ADMX files, which are XML-encoded collections of GPOs
     * I need to see if I can figure out how to make an ADMX to distribute a GPO that manages trust, providing all the root CAs in the database maked trusted
 * wrap at least /Trust and /Distrust in AuthZ
-    * This means I'll need to make it either use Krb5 for AuthN and then lookup the groups, OR I will need to make it require a JWT from OAuth, and then check the roles
+    * This means I'll need to make it either 
+        * use Krb5 for AuthN and then lookup the groups
+            * And does this mean retrieving the PAC from an AD TGT, or making an LDAP lookup? 
+        * OR I will need to make it require a JWT from OAuth, and then check the roles
+            * learning to OAuth-ify an app fills me with ph33r and intimidation
     * either way, it sounds difficult and intimidatiing
 * switch from SQLite3 to instead a real database, like SQL Svr, Oracle, PostGres
 * instructions to run inside a WSGI server, instead of the built-in development webserver
