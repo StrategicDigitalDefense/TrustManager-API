@@ -1,8 +1,9 @@
 # Work to do
 
 * documentation
-* GUI 
-    * Decision: Native WPF/WinForms in PowerShell, or web GUI
+* ~~GUI~~ 
+    * ~~Decision: Native WPF/WinForms in PowerShell, or web GUI~~
+    * Decided a Web GUI for now. May make a native Windows GUI some other time
 * batch job for Windows truststore
     * I know you can distribute and manage truststore with Group Policy
     * I know you can distribute Group Policy in ADMX files, which are XML-encoded collections of GPOs
