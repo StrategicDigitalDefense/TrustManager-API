@@ -1,4 +1,5 @@
-from flask import Blueprint, request, jsonify, Response, url_for, send_file, send_from_directory # type: ignore
+from flask import Blueprint, request, jsonify, Response, url_for, send_file, send_from_directory, abort # type: ignore
+#from flask import abort
 from datetime import datetime
 from cryptography import x509 # type: ignore
 from cryptography.hazmat.primitives import hashes, serialization # type: ignore
@@ -184,3 +185,42 @@ def admin_gui():
 #def swagger_ui():
 #    return send_from_directory('static', 'swagger.html')
 #
+
+BATCH_JOBS = {
+    "assemble_jks": "src/batch/assemble_jks.py",
+    "assemble_pfx": "src/batch/assemble_pfx.py",
+    "assemble_trusted_pem": "src/batch/assemble_trusted_pem.py",
+    "assemble_rpm": "src/batch/assemble_rpm.py"
+}
+
+import subprocess
+
+@certificates_bp.route('/BatchJob', methods=['POST'])
+def run_batch_job():
+    """
+    Initiate a batch job by name.
+    Request JSON: { "job": "<job_name>" }
+    """
+    job_name = request.json.get("job")
+    if not job_name or job_name not in BATCH_JOBS:
+        return jsonify({"error": "Invalid or missing job name.", "available_jobs": list(BATCH_JOBS.keys())}), 400
+
+    script_path = BATCH_JOBS[job_name]
+    try:
+        result = subprocess.run(
+            ["python3", script_path],
+            capture_output=True,
+            text=True,
+            check=True
+        )
+        return jsonify({
+            "message": f"Batch job '{job_name}' executed successfully.",
+            "stdout": result.stdout,
+            "stderr": result.stderr
+        }), 200
+    except subprocess.CalledProcessError as e:
+        return jsonify({
+            "error": f"Batch job '{job_name}' failed.",
+            "stdout": e.stdout,
+            "stderr": e.stderr
+        }), 500
