@@ -190,7 +190,8 @@ BATCH_JOBS = {
     "assemble_jks": "src/batch/assemble_jks.py",
     "assemble_pfx": "src/batch/assemble_pfx.py",
     "assemble_trusted_pem": "src/batch/assemble_trusted_pem.py",
-    "assemble_rpm": "src/batch/assemble_rpm.py"
+    "assemble_rpm": "src/batch/assemble_rpm.py",
+    "assemble_group_policy": "src/batch/assemble_group_policy.py"
 }
 
 import subprocess
