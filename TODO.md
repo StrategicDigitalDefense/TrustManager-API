@@ -8,7 +8,7 @@
     * ~~I know you can distribute and manage truststore with Group Policy~~
     * ~~I know you can distribute Group Policy in ADMX files, which are XML-encoded collections of GPOs~~
     * ~~I need to see if I can figure out how to make an ADMX to distribute a GPO that manages trust, providing all the root CAs in the database maked trusted~~
-* ~~Documentation how to consume/operationalize the truststores ~~
+* ~~Documentation how to consume/operationalize the truststores~~
 * wrap at least /Trust and /Distrust in AuthZ
     * Probably also the PUT /Certificate and the POST /BatchJob
     * This means I'll need to make it either 
