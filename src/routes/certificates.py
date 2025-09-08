@@ -71,7 +71,8 @@ def get_certificates():
         'validTo': cert.valid_to.strftime('%Y-%m-%d'),
         'serial': cert.serial,
         'fingerprint': cert.fingerprint,
-        'trusted': cert.trusted
+        'trusted': cert.trusted,
+        'certificate': cert.pem
     } for cert in certificates], 200
 
 @certificates_bp.route('/Trust', methods=['POST'])
@@ -115,21 +116,21 @@ def get_certificate_by_serial(serial):
     certificate = Certificate.query.filter_by(serial=serial).first()
     if not certificate:
         return jsonify({'error': 'Certificate not found'}), 404
-    return jsonify(certificate.pem), 200
+    return certificate.pem, 200
 
 @certificates_bp.route('/Certificate/subject/<subject>', methods=['GET'])
 def get_certificate_by_subject(subject):
     certificates = Certificate.query.filter(Certificate.subject.like(f"%{subject}%")).all()
     if not certificates:
         return jsonify({'error': 'No certificates found'}), 404
-    return jsonify([cert.pem for cert in certificates]), 200
+    return [cert.pem for cert in certificates], 200
 
 @certificates_bp.route('/Certificate/fingerprint/<fingerprint>', methods=['GET'])
 def get_certificate_by_fingerprint(fingerprint):
     certificate = Certificate.query.filter_by(fingerprint=fingerprint).first()
     if not certificate:
         return jsonify({'error': 'Certificate not found'}), 404
-    return jsonify(certificate.pem), 200
+    return certificate.pem, 200
 
 def generate_atom_feed(certificates):
     updated = max([cert.last_changed for cert in certificates]) if certificates else datetime.utcnow()
