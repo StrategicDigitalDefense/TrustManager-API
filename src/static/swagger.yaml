@@ -272,6 +272,7 @@ paths:
               properties:
                 job:
                   type: string
+                  enum: [assemble_jks, assemble_pfx, assemble_pem, assemble_rpm]
                   description: Name of the batch job to run
       responses:
         '200':
