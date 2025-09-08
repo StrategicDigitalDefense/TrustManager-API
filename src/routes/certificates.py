@@ -1,4 +1,4 @@
-from flask import Blueprint, request, jsonify, Response, url_for, send_file, send_from_directory, abort # type: ignore
+from flask import Blueprint, request, jsonify, Response, url_for, send_file, send_from_directory, abort, redirect # type: ignore
 #from flask import abort
 from datetime import datetime
 from cryptography import x509 # type: ignore
@@ -160,10 +160,10 @@ def trusted_certificates_feed():
     return Response(atom_xml, mimetype='application/atom+xml')
 
 TRUSTSTORE_FILES = {
-    "jks": "../static/trusted_certs.jks",
-    "pfx": "../static/trusted_certs.pfx",
-    "pem": "../static/trusted_certs.pem",
-    "rpm": "../static/trusted-certs-1.0.0-1.noarch.rpm"
+    "jks": "/static/trusted_certs.jks",
+    "pfx": "/static/trusted_certs.pfx",
+    "pem": "/static/trusted_certs.pem",
+    "rpm": "/static/trusted-certs-1.0.0-1.noarch.rpm"
 }
 
 @certificates_bp.route('/Truststore/<format>', methods=['GET'])
@@ -173,9 +173,12 @@ def get_truststore_file(format):
     Supported formats: jks, pfx, pem, rpm
     """
     filename = TRUSTSTORE_FILES.get(format.lower())
-    if not filename or not os.path.exists(filename):
-        return jsonify({'error': f'Truststore file for format "{format}" not found.'}), 404
-    return send_file(filename, as_attachment=True)
+    #if not filename or not os.path.exists(filename):
+    #    return jsonify({'error': f'Truststore file for format "{format}" not found.'}), 404
+    #return send_file(filename, as_attachment=True)
+    #return(redirect(f'/static/{os.path.basename(filename)}'))
+    return send_from_directory('static', os.path.basename(filename), as_attachment=True)
+
 
 @certificates_bp.route('/admin')
 def admin_gui():
