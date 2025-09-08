@@ -80,6 +80,40 @@ flask-certificates-api
 - **Endpoint:** `GET /Certificates/atom`
 - **Description:** Returns an ATOM XML feed of all certificates currently marked as trusted. The feed is updated automatically whenever a certificate is added or its trust status changes.
 
+### 6. Retrieve Certificate by Serial
+
+- **Endpoint:** `GET /Certificate/serial/{serial}`
+- **Description:** Retrieve a certificate by its serial number.
+- **Response:** PEM-encoded certificate.
+
+### 7. Retrieve Certificate(s) by Subject
+
+- **Endpoint:** `GET /Certificate/subject/{subject}`
+- **Description:** Retrieve certificate(s) by full or partial subject match.
+- **Response:** List of PEM-encoded certificates.
+
+### 8. Retrieve Certificate by Fingerprint
+
+- **Endpoint:** `GET /Certificate/fingerprint/{fingerprint}`
+- **Description:** Retrieve a certificate by its fingerprint.
+- **Response:** PEM-encoded certificate.
+
+### 9. Run a Batch Job
+
+- **Endpoint:** `POST /BatchJob`
+- **Description:** Initiate a batch job by name (such as building truststores).
+- **Request Body:**  
+  ```json
+  { "job": "<job_name>" }
+  ```
+- **Available jobs:**  
+  - `assemble_jks`
+  - `assemble_pfx`
+  - `assemble_trusted_pem`
+  - `assemble_rpm`
+  - `assemble_group_policy`
+- **Response:** JSON with job output or error.
+
 ## Batch Jobs
 
 Batch jobs are provided in the `src/batch` directory to export trusted certificates in various formats:
@@ -126,6 +160,30 @@ curl -X POST -H "Content-Type: application/json" -d '{"id": 1}' http://localhost
 
 ```bash
 curl -X GET http://localhost:5100/Certificates/atom
+```
+
+### Running a Batch Job
+
+```bash
+curl -X POST -H "Content-Type: application/json" -d '{"job": "assemble_jks"}' http://localhost:5100/BatchJob
+```
+
+### Retrieving a Certificate by Serial
+
+```bash
+curl -X GET http://localhost:5100/Certificate/serial/123456789
+```
+
+### Retrieving Certificates by Subject
+
+```bash
+curl -X GET http://localhost:5100/Certificate/subject/Example
+```
+
+### Retrieving a Certificate by Fingerprint
+
+```bash
+curl -X GET http://localhost:5100/Certificate/fingerprint/abcdef123456
 ```
 
 ## Web-based Admin GUI

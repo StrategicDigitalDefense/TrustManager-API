@@ -154,7 +154,7 @@ paths:
         '200':
           description: PEM-encoded certificate
           content:
-            application/json:
+            text/plain:
               schema:
                 type: string
         '404':
@@ -208,7 +208,7 @@ paths:
         '200':
           description: PEM-encoded certificate
           content:
-            application/json:
+            text/plain:
               schema:
                 type: string
         '404':
@@ -260,6 +260,60 @@ paths:
                   error:
                     type: string
 
+  /BatchJob:
+    post:
+      summary: Run a batch job
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                job:
+                  type: string
+                  description: Name of the batch job to run
+      responses:
+        '200':
+          description: Batch job executed successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                  stdout:
+                    type: string
+                  stderr:
+                    type: string
+        '400':
+          description: Invalid or missing job name
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                  available_jobs:
+                    type: array
+                    items:
+                      type: string
+        '500':
+          description: Batch job failed
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                  stdout:
+                    type: string
+                  stderr:
+                    type: string
+
 components:
   schemas:
     CertificateSummary:
@@ -278,4 +332,4 @@ components:
         serial:
           type: string
         fingerprint:
-          type:
+          type: string
