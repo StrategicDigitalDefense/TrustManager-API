@@ -30,12 +30,13 @@ To use this truststore,
         System.setProperty("javax.net.ssl.trustStorePassword", "your_truststore_password");
         ````
     or as a runtime definition that's passed to the JVM:
-        ````
+        ```console
         java \
          -Djavax.net.ssl.trustStore=/path/to/your/truststore.jks \
          -Djavax.net.ssl.trustStorePassword=your_truststore_password \
          YourApplicationMainClass
-        ````
+        ```
+        
 
 ## PKCS#12 (PFX)
 This truststore can be used in a couple of ways. 
@@ -49,5 +50,7 @@ Finally, it can be imported into Windows in the LocalComputer's "Trusted Root Ce
 ![Importing Into Windows Truststore](import_p12_into_windows_truststore.jpeg)
 
 ## RedHat System (RPM)
+This RPM package is meant to be installed into a RedHat (or RedHat-alike, such as CentOS or Fedora Core) system. It will install the trusted certificates into the system's truststore, which will provide trust information to virtually all languages, runtimes, and applications running inside the RedHat system. 
 
 ## Concatenated PEM
+This is for consumption by OpenSSL or other PKI libraries that take a single text file that contains a simple list of trusted certificates. 
