@@ -5,7 +5,7 @@ from cryptography.hazmat.primitives import serialization
 from db.database import db
 from models.certificates import Certificate
 
-def export_gpo_trusted_roots(output_dir="GPO_Backup"):
+def export_gpo_trusted_roots(output_dir="static/GPO_Backup"):
     # Generate a new GUID for the GPO backup
     gpo_guid = str(uuid.uuid4()).upper()
     gpo_path = os.path.join(output_dir, gpo_guid, "DomainSysvol", "GPO", "Machine", "Microsoft", "Windows", "SecEdit")

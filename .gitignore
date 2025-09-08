@@ -4,3 +4,4 @@ src/instance/certificates.db
 src/instance/certificates.db
 src/instance/certificates.db
 src/static/trusted_certs.pem
+src/static/trusted_certs.pfx

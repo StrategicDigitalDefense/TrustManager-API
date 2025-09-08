@@ -1,17 +1,19 @@
-import os
 import sys
-sys.path.append('../db')
-sys.path.append('../models')
-import subprocess
+import os
 import tempfile
-from db.database import db_session
+
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..')))
+
+from flask import Flask
+from db.database import db
 from models.certificates import Certificate
 
 RPM_NAME = "trusted-certs"
 RPM_VERSION = "1.0.0"
 RPM_RELEASE = "1"
 RPM_ARCH = "noarch"
-RPM_OUTPUT = "trusted-certs-1.0.0-1.noarch.rpm"
+RPM_OUTPUT = "static/trusted-certs-1.0.0-1.noarch.rpm"
 CERTS_DIR = "/etc/pki/ca-trust/source/anchors"
 
 def assemble_rpm():
@@ -90,4 +92,8 @@ rm -rf $RPM_BUILD_ROOT
             print("RPM build failed.")
 
 if __name__ == "__main__":
-    assemble_rpm()
+    app = Flask(__name__)
+    app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///certificates.db'
+    db.init_app(app)
+    with app.app_context():
+        assemble_rpm()

@@ -1,13 +1,16 @@
-import os
 import sys
-sys.path.append('../db')
-sys.path.append('../models')
+import os
+
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..')))
+
+from flask import Flask
+from db.database import db
+from models.certificates import Certificate
 import subprocess
 import tempfile
-from db.database import db_session
-from models.certificates import Certificate
 
-PFX_PATH = "trusted_certs.pfx"
+PFX_PATH = "static/trusted_certs.pfx"
 PFX_PASSWORD = "changeit"
 
 def assemble_pfx():
@@ -42,4 +45,8 @@ def assemble_pfx():
     print(f"PFX assembled at {PFX_PATH}")
 
 if __name__ == "__main__":
-    assemble_pfx()
+    app = Flask(__name__)
+    app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///certificates.db'
+    db.init_app(app)
+    with app.app_context():
+        assemble_pfx()
