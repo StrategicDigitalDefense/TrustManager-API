@@ -126,7 +126,26 @@ function loadBatchJobs() {
         });
 }
 
+function loadGpoZips() {
+    fetch('/Truststore/gpo/list')
+        .then(res => res.json())
+        .then(zips => {
+            const ul = document.getElementById('gpoZipList');
+            ul.innerHTML = '';
+            zips.forEach(zip => {
+                const li = document.createElement('li');
+                const a = document.createElement('a');
+                a.href = '/Truststore/gpo/' + encodeURIComponent(zip);
+                a.textContent = zip;
+                a.download = zip;
+                li.appendChild(a);
+                ul.appendChild(li);
+            });
+        });
+}
+
 document.addEventListener('DOMContentLoaded', function() {
     fetchCertificates();
     loadBatchJobs();
+    loadGpoZips();
 });

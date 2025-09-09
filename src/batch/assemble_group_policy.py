@@ -1,7 +1,15 @@
 import os
+import sys
+from flask import Flask # type: ignore
 import uuid
-from cryptography import x509
-from cryptography.hazmat.primitives import serialization
+import shutil
+
+# Ensure src/ is in sys.path
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..')))
+
+from cryptography import x509 # type: ignore
+from cryptography.hazmat.primitives import serialization # type: ignore
 from db.database import db
 from models.certificates import Certificate
 
@@ -40,5 +48,14 @@ def export_gpo_trusted_roots(output_dir="static/GPO_Backup"):
 
     print(f"GPO backup created at: {os.path.abspath(os.path.join(output_dir, gpo_guid))}")
 
+    # Zip the GPO backup folder
+    zip_path = os.path.join(output_dir, f"{gpo_guid}.zip")
+    shutil.make_archive(os.path.splitext(zip_path)[0], 'zip', os.path.join(output_dir, gpo_guid))
+    print(f"GPO backup zip created at: {zip_path}")
+
 if __name__ == "__main__":
-    export_gpo_trusted_roots()
+    app = Flask(__name__) # type: ignore
+    app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///certificates.db'
+    db.init_app(app)
+    with app.app_context():
+        export_gpo_trusted_roots()

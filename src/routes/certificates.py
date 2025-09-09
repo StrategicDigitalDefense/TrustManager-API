@@ -7,6 +7,7 @@ from cryptography.hazmat.backends import default_backend # type: ignore
 from xml.sax.saxutils import escape
 import sys
 import os
+import glob
 sys.path.append('../models')
 sys.path.append('../db')
 from models.certificates import Certificate
@@ -233,3 +234,34 @@ def run_batch_job():
 def list_batch_jobs():
     # BATCH_JOBS should be defined at module level
     return jsonify(list(BATCH_JOBS.keys()))
+
+@certificates_bp.route('/Truststore/gpo', methods=['GET'])
+def download_latest_gpo_zip():
+    gpo_dir = os.path.join('static', 'GPO_Backup')
+    zip_files = sorted(
+        glob.glob(os.path.join(gpo_dir, '*.zip')),
+        key=os.path.getmtime,
+        reverse=True
+    )
+    if not zip_files:
+        return jsonify({'error': 'No GPO backup zip found.'}), 404
+    return send_file(zip_files[0], as_attachment=True)
+
+@certificates_bp.route('/Truststore/gpo/list', methods=['GET'])
+def list_gpo_zips():
+    gpo_dir = os.path.join('static', 'GPO_Backup')
+    zip_files = sorted(
+        glob.glob(os.path.join(gpo_dir, '*.zip')),
+        key=os.path.getmtime,
+        reverse=True
+    )
+    # Return just the filenames (not full paths)
+    return jsonify([os.path.basename(z) for z in zip_files])
+
+@certificates_bp.route('/Truststore/gpo/<zipname>', methods=['GET'])
+def download_specific_gpo_zip(zipname):
+    gpo_dir = os.path.join('static', 'GPO_Backup')
+    zip_path = os.path.join(gpo_dir, zipname)
+    if not os.path.exists(zip_path):
+        return jsonify({'error': 'GPO backup zip not found.'}), 404
+    return send_file(zip_path, as_attachment=True)
