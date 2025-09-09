@@ -13,6 +13,9 @@ section {
     border-radius: 8px;
     box-shadow: 0 2px 6px #ccc;
 }
+section > div {
+    flex: 1 1 0;
+}
 table {
     width: 100%;
     border-collapse: collapse;

@@ -84,5 +84,32 @@ function searchCertificates() {
     renderCertTable(filtered);
 }
 
+function runBatchJob() {
+    const job = document.getElementById('batchJobSelect').value;
+    document.getElementById('batchJobMsg').textContent = "Running...";
+    fetch('/BatchJob', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ job })
+    })
+    .then(res => res.json())
+    .then(data => {
+        if (data.message) {
+            document.getElementById('batchJobMsg').textContent = data.message;
+        } else if (data.error) {
+            document.getElementById('batchJobMsg').textContent = data.error;
+        }
+        if (data.stdout) {
+            document.getElementById('batchJobMsg').textContent += "\n" + data.stdout;
+        }
+        if (data.stderr) {
+            document.getElementById('batchJobMsg').textContent += "\n" + data.stderr;
+        }
+    })
+    .catch(() => {
+        document.getElementById('batchJobMsg').textContent = "Error running batch job.";
+    });
+}
+
 // Initial load
 document.addEventListener('DOMContentLoaded', fetchCertificates);
