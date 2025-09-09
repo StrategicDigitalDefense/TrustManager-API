@@ -7,22 +7,32 @@ TrustManager API is a tool to help enterprises and agencies organize and manage 
 ```
 flask-certificates-api
 ├── src
-│   ├── app.py               # Entry point of the application
+│   ├── app.py                   # Entry point of the application
 │   ├── models
-│   │   └── certificates.py   # Defines the Certificate model
+│   │   └── certificates.py      # Defines the Certificate model
 │   ├── routes
-│   │   └── certificates.py   # Contains route handlers for API endpoints
+│   │   └── certificates.py      # Contains route handlers for API endpoints
 │   ├── db
-│   │   └── database.py       # Handles SQLite database connection and operations
+│   │   └── database.py          # Handles SQLite database connection and operations
 │   ├── batch
-│   │   ├── assemble_jks.py   # Batch job: builds Java KeyStore from trusted certs
-│   │   ├── assemble_pfx.py   # Batch job: builds PKCS#12 (PFX) from trusted certs
-│   │   ├── assemble_trusted_pem.py # Batch job: concatenates trusted certs as PEM
-│   │   └── assemble_rpm.py   # Batch job: builds RPM package for trusted certs
-│   └── utils
-│       └── __init__.py       # Utility functions for processing certificates
-├── requirements.txt          # Lists project dependencies
-└── README.md                 # Documentation for the project
+│   │   ├── assemble_jks.py          # Batch job: builds Java KeyStore from trusted certs
+│   │   ├── assemble_pfx.py          # Batch job: builds PKCS#12 (PFX) from trusted certs
+│   │   ├── assemble_trusted_pem.py  # Batch job: concatenates trusted certs as PEM
+│   │   ├── assemble_rpm.py          # Batch job: builds RPM package for trusted certs
+│   │   └── assemble_group_policy.py # Batch job: builds GPO/Group Policy truststore
+│   └── static
+│       ├── index.html           # Web-based admin GUI
+│       ├── app.js               # JavaScript for the admin GUI
+│       ├── style.css            # CSS for the admin GUI
+│       ├── swagger.yaml         # OpenAPI/Swagger specification
+│       ├── trusted_certs.jks    # Generated Java KeyStore (JKS)
+│       ├── trusted_certs.pfx    # Generated PKCS#12 (PFX)
+│       ├── trusted_certs.pem    # Concatenated PEM file
+│       └── trusted-certs-1.0.0-1.noarch.rpm # Generated RPM package
+├── requirements.txt             # Lists project dependencies
+├── Dockerfile                   # Docker container definition
+├── license.txt                  # Project license
+└── README.md                    # Documentation for the project
 ```
 
 ## Setup Instructions
