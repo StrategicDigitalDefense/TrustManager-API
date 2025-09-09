@@ -111,5 +111,22 @@ function runBatchJob() {
     });
 }
 
-// Initial load
-document.addEventListener('DOMContentLoaded', fetchCertificates);
+function loadBatchJobs() {
+    fetch('/BatchJob/list')
+        .then(res => res.json())
+        .then(jobs => {
+            const select = document.getElementById('batchJobSelect');
+            select.innerHTML = '';
+            jobs.forEach(job => {
+                const opt = document.createElement('option');
+                opt.value = job;
+                opt.textContent = job.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
+                select.appendChild(opt);
+            });
+        });
+}
+
+document.addEventListener('DOMContentLoaded', function() {
+    fetchCertificates();
+    loadBatchJobs();
+});

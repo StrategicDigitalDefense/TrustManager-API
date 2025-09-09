@@ -114,6 +114,15 @@ flask-certificates-api
   - `assemble_group_policy`
 - **Response:** JSON with job output or error.
 
+### 10. List Available Batch Jobs
+
+- **Endpoint:** `GET /BatchJob/list`
+- **Description:** Returns a list of available batch job names that can be executed via the API.
+- **Response:**  
+  ```json
+  ["assemble_jks", "assemble_pfx", "assemble_trusted_pem", "assemble_rpm", "assemble_group_policy"]
+  ```
+
 ## Batch Jobs
 
 Batch jobs are provided in the `src/batch` directory to export trusted certificates in various formats:
@@ -184,6 +193,12 @@ curl -X GET http://localhost:5100/Certificate/subject/Example
 
 ```bash
 curl -X GET http://localhost:5100/Certificate/fingerprint/abcdef123456
+```
+
+### Listing Available Batch Jobs
+
+```bash
+curl -X GET http://localhost:5100/BatchJob/list
 ```
 
 ## Web-based Admin GUI

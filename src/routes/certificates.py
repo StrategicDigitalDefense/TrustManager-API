@@ -228,3 +228,8 @@ def run_batch_job():
             "stdout": e.stdout,
             "stderr": e.stderr
         }), 500
+
+@certificates_bp.route('/BatchJob/list', methods=['GET'])
+def list_batch_jobs():
+    # BATCH_JOBS should be defined at module level
+    return jsonify(list(BATCH_JOBS.keys()))
