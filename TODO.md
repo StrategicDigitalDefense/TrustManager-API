@@ -11,7 +11,7 @@
     * either way, it sounds difficult and intimidatiing
 * switch from SQLite3 to instead a real database, like SQL Svr, Oracle, PostGres
 * externalize configuration
-  * This will be particularly important for things like database connection information, AuthZ allowed roes/groups, AuthZ configuration (server, relying-party secret, etc)
+    * This will be particularly important for things like database connection information, AuthZ allowed roes/groups, AuthZ configuration (server, relying-party secret, etc)
 
 # Completed
 * ~~GUI~~ 
