@@ -1,6 +1,7 @@
-Flask==2.2.2
+Flask>=2.2.2
 #Flask-SQLAlchemy==2.5.1
-Flask-SQLAlchemy==3.0.3
-pyOpenSSL==23.0.0
-cryptography==39.0.1
-Werkzeug==2.2.2
+Flask-SQLAlchemy>=3.0.3
+pyOpenSSL>=23.0.0
+cryptography>=39.0.1
+Werkzeug>=2.2.2
+waitress>=2.1.2
