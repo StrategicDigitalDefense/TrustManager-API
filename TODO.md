@@ -20,4 +20,4 @@
 * switch from SQLite3 to instead a real database, like SQL Svr, Oracle, PostGres
 * ~~instructions to run inside a WSGI server, instead of the built-in development webserver~~
     * ~~It's now running under waitress.serve. That was easy.~~ 
-* Dockerfile to package the app + WSGI server + Python together
+* ~~Dockerfile to package the app + WSGI server + Python together~~
