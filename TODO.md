@@ -18,5 +18,6 @@
             * learning to OAuth-ify an app fills me with ph33r and intimidation
     * either way, it sounds difficult and intimidatiing
 * switch from SQLite3 to instead a real database, like SQL Svr, Oracle, PostGres
-* instructions to run inside a WSGI server, instead of the built-in development webserver
+* ~~instructions to run inside a WSGI server, instead of the built-in development webserver~~
+    * ~~It's now running under waitress.serve. That was easy.~~ 
 * Dockerfile to package the app + WSGI server + Python together
