@@ -20,10 +20,10 @@ EXPOSE 5100
 CMD ["python3.9", "app.py"]
 #
 # To build:
-# docker build -t trustmanager-api .
+# docker build -t trustmanager-api . 
 #
 # To run:
-# docker run -d -p 5100:5100 --name trustmanager-api
+# docker run -it -p 5100:5100 trustmanager-api 
 #
 # Then browse to http://localhost:5100/admin in browser
 #
