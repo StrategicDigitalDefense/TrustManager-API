@@ -229,6 +229,8 @@ A simple web GUI is available for administrators at [http://localhost:5100/admin
 
 Static files for the GUI are located in the `static/` folder.
 
+![TrustManager GUI](TrustManager-GUI.jpeg)
+
 ## License
 
 This project is licensed under the [BSD License](license.txt).
