@@ -35,6 +35,22 @@ flask-certificates-api
 └── README.md                    # Documentation for the project
 ```
 
+```mermaid
+architecture-beta
+  service db(database)[Database]
+  service api(server)[API]
+  service batch(server)[Batch Jobs]
+  service gui(internet)[GUI]
+  service oidc(internet)[OIDC IdP]
+
+  db:R -- L:api
+  db:B -- L:batch
+  api:R -- L:gui
+  oidc:B -- T:api
+  
+  
+```
+
 ## Setup Instructions
 
 1. **Clone the repository:**
