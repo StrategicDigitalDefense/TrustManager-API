@@ -231,6 +231,8 @@ curl -X GET http://localhost:5100/BatchJob/list
 
 A simple web GUI is available for administrators at [http://localhost:5100/admin](http://localhost:5100/admin).
 
+![TrustManager GUI](TrustManager-GUI.jpeg)
+
 **Features:**
 - Add new certificates
 - View and search all certificates
@@ -244,8 +246,6 @@ A simple web GUI is available for administrators at [http://localhost:5100/admin
 3. Use the interface to manage certificates and truststores.
 
 Static files for the GUI are located in the `static/` folder.
-
-![TrustManager GUI](TrustManager-GUI.jpeg)
 
 ## License
 
