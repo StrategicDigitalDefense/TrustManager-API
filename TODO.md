@@ -6,12 +6,17 @@
     * This means I'll need to make it either 
         * use Krb5 for AuthN and then lookup the groups
             * And does this mean retrieving the PAC from an AD TGT, or making an LDAP lookup? 
-        * OR I will need to make it require a JWT from OAuth, and then check the roles
+        * OR I will need to make it require a JWT from OAuth/OpenID Connect, and then check the roles
             * learning to OAuth-ify an app fills me with ph33r and intimidation
     * either way, it sounds difficult and intimidatiing
 * switch from SQLite3 to instead a real database, like SQL Svr, Oracle, PostGres
 * externalize configuration
-    * This will be particularly important for things like database connection information, AuthZ allowed roes/groups, AuthZ configuration (server, relying-party secret, etc)
+    * This will be particularly important for things like database connection information, AuthZ allowed roles/groups, AuthZ configuration (server, relying-party secret, etc)
+* add logging of all subroutine invocations, as well as all input passed in, whether as URL parameters or in the body of a message
+    * When there is an error (such as an HTTP 500), log enough context that I can make sense of what happened
+    * When there is a database write, log previous value, new value, and what made the change
+    * probably want to send all logged messages via SYSLOG, with configurable SYSLOG server and configurable SYSLOG facility
+        * It will probably always just be one of the LOCAL0-LOCAL7 facilities, since the built-in facilities don't really apply, and feel like a throwback to the mid-nineties. 
 
 # Completed
 * ~~GUI~~ 
