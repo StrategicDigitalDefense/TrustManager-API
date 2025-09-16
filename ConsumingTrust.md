@@ -30,12 +30,12 @@ To use this truststore,
         System.setProperty("javax.net.ssl.trustStorePassword", "your_truststore_password");
         ````
     or as a runtime definition that's passed to the JVM:
-        ```console
+      ```console
         java \
          -Djavax.net.ssl.trustStore=/path/to/your/truststore.jks \
          -Djavax.net.ssl.trustStorePassword=your_truststore_password \
          YourApplicationMainClass
-        ```
+      ```
         
 
 ## PKCS#12 (PFX)
