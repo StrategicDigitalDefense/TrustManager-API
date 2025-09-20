@@ -12,6 +12,11 @@
 * switch from SQLite3 to instead a real database, like SQL Svr, Oracle, PostGres
 * externalize configuration
     * This will be particularly important for things like database connection information, AuthZ allowed roles/groups, AuthZ configuration (server, relying-party secret, etc)
+    * The pattern we will use is 
+      * have the application retrieve configurable parms from environment variabled
+        * if the environment variable is not set, set a sane default in code
+        * if the value of the environment variable is nonsensical, set a sane default in code
+      * have the operator of the application pass the environment variable in, using "--env" command-line parm to the "docker run" command ```docker run -d --env 'TRUSTMANAGER_DATABASE_URL'='sqlite:///certificates.db' -p 5100:5100 trustmanager-api```
 * add logging of all subroutine invocations, as well as all input passed in, whether as URL parameters or in the body of a message
     * When there is an error (such as an HTTP 500), log enough context that I can make sense of what happened
     * When there is a database write, log previous value, new value, and what made the change
