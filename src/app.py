@@ -1,11 +1,25 @@
-from flask import Flask # type: ignore
+from flask import Flask, config # type: ignore
 from db.database import db
 from models.certificates import Certificate  # <-- Import your model here!
 from routes.certificates import certificates_bp
-from waitress import serve
+from waitress import serve # type: ignore
+import os
+
 
 app = Flask(__name__)
-app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///certificates.db'
+try:
+    app.config['SQLALCHEMY_DATABASE_URI'] = os.environ['TRUSTMANAGER_DATABASE_URL']
+except KeyError:
+    app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///certificates.db'
+try:
+    if os.environ['TRUSTMANAGER_REQUIRE_AUTH'].lower() in [
+        'true', '1', 't', 'yes', 'y'
+    ]:
+        app.config['AUTH'] = True
+    else:
+        app.config['AUTH'] = False
+except KeyError:
+    app.config['AUTH'] = False
 db.init_app(app)  # <-- This is required
 
 with app.app_context():
