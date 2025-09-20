@@ -1,5 +1,5 @@
-from flask import g
-from flask_sqlalchemy import SQLAlchemy
+from flask import g # type: ignore
+from flask_sqlalchemy import SQLAlchemy # type: ignore
 import sqlite3
 
 db = SQLAlchemy()
