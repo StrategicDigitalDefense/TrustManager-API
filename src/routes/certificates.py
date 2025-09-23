@@ -9,12 +9,15 @@ import sys
 import os
 import glob
 import logging
+sys.path.append('../')
 sys.path.append('../models')
 sys.path.append('../db')
 from models.certificates import Certificate
 from db.database import *
 import syslog
 import subprocess
+from functools import wraps
+from app import oauth, app
 
 syslog.openlog("TrustManager-API",0,syslog.LOG_LOCAL7)
 
@@ -50,7 +53,37 @@ def parse_certificate(pem_data):
         'fingerprint': fingerprint
     }
 
+
+def require_oidc_role(required_role):
+    def decorator(f):
+        @wraps(f)
+        def decorated_function(*args, **kwargs):
+            # Verify the Authorization header
+            if app.config['AUTH'] == True:
+                auth_header = request.headers.get('Authorization')
+                if not auth_header or not auth_header.startswith('Bearer '):
+                    return jsonify({'error': 'Unauthorized'}), 401
+
+                token = auth_header.split(' ')[1]
+
+                try:
+                    # Decode and validate the token
+                    claims = oauth.oidc.parse_id_token(token)
+                except Exception as e:
+                    return jsonify({'error': f'Invalid token: {str(e)}'}), 401
+
+                # Check for the required role in the Roles claim
+                roles = claims.get('roles', [])
+                if required_role not in roles:
+                    return jsonify({'error': 'Forbidden: insufficient role'}), 403
+
+            return f(*args, **kwargs)
+        return decorated_function
+    return decorator
+
+
 @certificates_bp.route('/Certificate', methods=['PUT'])
+@require_oidc_role('TrustAdmin')
 def add_certificate():
     pem_data = request.json.get('pem')
     if not pem_data:
@@ -100,6 +133,7 @@ def get_certificates():
     } for cert in certificates], 200
 
 @certificates_bp.route('/Trust', methods=['POST'])
+@require_oidc_role('TrustAdmin')
 def trust_certificate():
     cert_id = request.json.get('id')
     syslog.syslog(syslog.LOG_DEBUG,"Calling trust_certificate() with certificate ID %i" % (cert_id))
@@ -124,6 +158,7 @@ def trust_certificate():
     return jsonify({'message': 'Certificate trusted successfully'}), 200
 
 @certificates_bp.route('/Distrust', methods=['POST'])
+@require_oidc_role('TrustAdmin')
 def distrust_certificate():
     cert_id = request.json.get('id')
     if not cert_id:
@@ -237,6 +272,7 @@ BATCH_JOBS = {
 }
 
 @certificates_bp.route('/BatchJob', methods=['POST'])
+@require_oidc_role('TrustAdmin')
 def run_batch_job():
     """
     Initiate a batch job by name.

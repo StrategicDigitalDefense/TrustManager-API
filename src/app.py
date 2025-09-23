@@ -3,6 +3,7 @@ from db.database import db
 from models.certificates import Certificate  # <-- Import your model here!
 from routes.certificates import certificates_bp
 from waitress import serve # type: ignore
+from authlib.integrations.flask_client import OAuth # type: ignore
 import os
 
 
@@ -26,6 +27,22 @@ with app.app_context():
     db.create_all()  # Optional: creates tables if not present
 
 app.register_blueprint(certificates_bp)
+
+# Initialize OAuth
+oauth = OAuth(app)
+
+# Register the OIDC provider
+oauth.register(
+    name='oidc',
+    client_id='YOUR_CLIENT_ID',
+    client_secret='YOUR_CLIENT_SECRET',
+    server_metadata_url='https://YOUR_OIDC_PROVIDER/.well-known/openid-configuration',
+    client_kwargs={
+        'scope': 'openid profile email roles'
+    }
+)
+
+
 
 if __name__ == "__main__":
     #app.run(host="0.0.0.0", port=5100, debug=True)
