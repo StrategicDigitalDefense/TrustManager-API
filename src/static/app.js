@@ -1,17 +1,24 @@
 function addCertificate() {
     const pem = document.getElementById('pemInput').value;
+    console.log("PEM being sent:", pem);
     fetch('/Certificate', {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ pem })
     })
-    .then(res => res.json())
+    .then(res => {
+        if (!res.ok) {
+            throw new Error(`HTTP ${res.status}: ${res.statusText}`);
+        }
+        return res.json();
+    })
     .then(data => {
         document.getElementById('addCertMsg').textContent = data.message || data.error || '';
         fetchCertificates();
     })
     .catch(err => {
-        document.getElementById('addCertMsg').textContent = 'Error adding certificate.';
+        console.error("Error adding certificate:", err);
+        document.getElementById('addCertMsg').textContent = `Error adding certificate: ${err.message}`;
     });
 }
 

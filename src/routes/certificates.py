@@ -8,6 +8,7 @@ from xml.sax.saxutils import escape
 import sys
 import os
 import glob
+import logging
 sys.path.append('../models')
 sys.path.append('../db')
 from models.certificates import Certificate
@@ -51,15 +52,13 @@ def parse_certificate(pem_data):
 
 @certificates_bp.route('/Certificate', methods=['PUT'])
 def add_certificate():
-    #pem_data = request.json.get('pem')
-    pem_data = request.data.decode('utf-8') # Read raw data from request body
-    syslog.syslog(syslog.LOG_DEBUG,"Calling add_certificate() with PEM payload:\n%ws" %(pem_data))
+    pem_data = request.json.get('pem')
     if not pem_data:
         return jsonify({'error': 'PEM data is required'}), 400
-
     try:
         fields = parse_certificate(pem_data)
     except Exception as e:
+        logging.error(f"Certificate parsing failed: {str(e)}")
         return jsonify({'error': f'Failed to parse certificate: {str(e)}'}), 400
 
     new_certificate = Certificate(
@@ -75,8 +74,12 @@ def add_certificate():
         trusted=False
     )
 
-    db.session.add(new_certificate)
-    db.session.commit()
+    try:
+        db.session.add(new_certificate)
+        db.session.commit()
+    except Exception as e:
+        logging.error(f"Database operation failed: {str(e)}")
+        return jsonify({'error': 'Failed to save certificate to the database.'}), 500
 
     return jsonify({'message': 'Certificate added successfully'}), 201
 

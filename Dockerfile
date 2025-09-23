@@ -9,7 +9,7 @@ COPY requirements.txt .
 COPY license.txt .
 RUN python3 -m pip install -v -r requirements.txt
 # Need JDK so we get keytool for creating keystores and truststores 
-RUN yum -y install java-17-openjdk-devel
+RUN yum -y install java-17-openjdk
 # Need openssl for creating PKCS#12 (PFX) bundles
 RUN yum -y install openssl openssl-devel
 # Bash, just in case we have to get an interactive TTY in there
@@ -23,7 +23,7 @@ CMD ["python3.9", "app.py"]
 # docker build -t trustmanager-api . 
 #
 # To run:
-# docker run -it -p 5100:5100 trustmanager-api 
+# docker run -d -it -p 5100:5100 trustmanager-api 
 #
 # Then browse to http://localhost:5100/admin in browser
 #
