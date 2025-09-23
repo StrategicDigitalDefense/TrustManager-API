@@ -21,18 +21,17 @@ try:
         app.config['AUTH'] = False
 except KeyError:
     app.config['AUTH'] = False
-try:
-    app.config['SECRET_KEY'] = os.environ['TRUSTMANAGER_SECRET_KEY']
-except KeyError:
-    app.config['SECRET_KEY'] = 'default_secret_key'
-try:
-    app.config['OIDC_CLIENT_ID'] = os.environ['TRUSTMANAGER_OIDC_CLIENT_ID']
-    app.config['OIDC_CLIENT_SECRET'] = os.environ['TRUSTMANAGER_OIDC_CLIENT_SECRET']
-    app.config['OIDC_METADATA_URL'] = os.environ['TRUSTMANAGER_OIDC_METADATA_URL']  
-except KeyError:
-    app.config['OIDC_CLIENT_ID'] = 'default_client_id'
-    app.config['OIDC_CLIENT_SECRET'] = 'default_client_secret'
-    app.config['OIDC_METADATA_URL'] = 'https://example.com/.well-known/openid-configuration'
+# try:
+#     app.config['SECRET_KEY'] = os.environ['TRUSTMANAGER_SECRET_KEY']
+# except KeyError:
+#     app.config['SECRET_KEY'] = 'default_secret_key'
+if app.config['AUTH']:
+    try:
+        app.config['OIDC_CLIENT_ID'] = os.environ['TRUSTMANAGER_OIDC_CLIENT_ID']
+        app.config['OIDC_CLIENT_SECRET'] = os.environ['TRUSTMANAGER_OIDC_CLIENT_SECRET']
+        app.config['OIDC_METADATA_URL'] = os.environ['TRUSTMANAGER_OIDC_METADATA_URL']  
+    except KeyError:
+        app.config['AUTH'] = False  # Disable auth if OIDC config is missing
 db.init_app(app)  # <-- This is required
 
 with app.app_context():
