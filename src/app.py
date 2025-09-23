@@ -21,6 +21,18 @@ try:
         app.config['AUTH'] = False
 except KeyError:
     app.config['AUTH'] = False
+try:
+    app.config['SECRET_KEY'] = os.environ['TRUSTMANAGER_SECRET_KEY']
+except KeyError:
+    app.config['SECRET_KEY'] = 'default_secret_key'
+try:
+    app.config['OIDC_CLIENT_ID'] = os.environ['TRUSTMANAGER_OIDC_CLIENT_ID']
+    app.config['OIDC_CLIENT_SECRET'] = os.environ['TRUSTMANAGER_OIDC_CLIENT_SECRET']
+    app.config['OIDC_METADATA_URL'] = os.environ['TRUSTMANAGER_OIDC_METADATA_URL']  
+except KeyError:
+    app.config['OIDC_CLIENT_ID'] = 'default_client_id'
+    app.config['OIDC_CLIENT_SECRET'] = 'default_client_secret'
+    app.config['OIDC_METADATA_URL'] = 'https://example.com/.well-known/openid-configuration'
 db.init_app(app)  # <-- This is required
 
 with app.app_context():
@@ -34,9 +46,9 @@ oauth = OAuth(app)
 # Register the OIDC provider
 oauth.register(
     name='oidc',
-    client_id='YOUR_CLIENT_ID',
-    client_secret='YOUR_CLIENT_SECRET',
-    server_metadata_url='https://YOUR_OIDC_PROVIDER/.well-known/openid-configuration',
+    client_id=app.config['OIDC_CLIENT_ID'],
+    client_secret=app.config['OIDC_CLIENT_SECRET'],
+    server_metadata_url=app.config['OIDC_METADATA_URL'],
     client_kwargs={
         'scope': 'openid profile email roles'
     }
