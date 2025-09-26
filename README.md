@@ -61,11 +61,11 @@ All configuration for the application is taken from the environment as environme
 
 The configurable parms available are:
 
-* TRUSTMANAGER_DATABASE_URL
-* TRUSTMANAGER_REQUIRE_AUTH
-* TRUSTMANAGER_OIDC_CLIENT_ID
-* TRUSTMANAGER_OIDC_CLIENT_SECRET
-* TRUSTMANAGER_OIDC_METADATA_URL
+* TRUSTMANAGER_DATABASE_URL: default "sqlite:///certificates.db"
+* TRUSTMANAGER_REQUIRE_AUTH: default "False"
+* TRUSTMANAGER_OIDC_CLIENT_ID: default ""
+* TRUSTMANAGER_OIDC_CLIENT_SECRET: default ""
+* TRUSTMANAGER_OIDC_METADATA_URL: default ""
 
 ### Running Containerized
 
