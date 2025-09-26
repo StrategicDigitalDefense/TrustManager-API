@@ -53,6 +53,47 @@ architecture-beta
 
 ## Setup Instructions
 
+### Running Containerized
+
+**Note:** This is the recommended way to run this tool. It ensures the running environment has everything you need, and is configured correctly. 
+
+1. **Set the configurable parms as exported environment variables:**
+
+   All configuration for the application is taken from the environment as environment variables that start with "TRUSTMANAGER_"
+   ```
+    export TRUSTMANAGER_DATABASE_URL='sqlite:///certificates.db'
+
+    ## TrustManager-API can require AuthN|Z for non-GET endpoints
+    ## AuthN|Z defaults to disabled, and can be turned on with the parm "TRUSTMANAGER_REQUIRE_AUTH"
+    ## If you turn-on Auth, then you need to specify the Auth parms
+    ## If you are missing any of the Auth parms, it will run with Auth disabled
+    export TRUSTMANAGER_REQUIRE_AUTH=True
+    export TRUSTMANAGER_OIDC_CLIENT_ID=''
+    export TRUSTMANAGER_OIDC_CLIENT_SECRET=''
+    export TRUSTMANAGER_OIDC_METADATA_URL=''
+   ```
+2. **Build the container image, using the Dockerfile in the current folder:**
+   ```
+    docker build -t trustmanager-api . 
+   ```
+3. **Run the container, passing-in the configurable parms exported above:**
+   
+   You can read more about passing environment variables from your host to your container at [https://docs.docker.com/reference/cli/docker/container/run/#env]
+   ```
+    docker run \
+        -d \
+        -p 5100:5100 \
+        --env TRUSTMANAGER_DATABASE_URL \
+        --env RUSTMANAGER_REQUIRE_AUTH \
+        --env RUSTMANAGER_OIDC_CLIENT_ID \
+        --env TRUSTMANAGER_OIDC_CLIENT_SECRET \
+        --env TRUSTMANAGER_OIDC_METADATA_URL \
+        trustmanager-api 
+   ```
+   The API will listen on port **5100**
+
+### Running Directly On The Command-Line
+
 1. **Clone the repository:**
    ```
    git clone <repository-url>
@@ -70,7 +111,22 @@ architecture-beta
    pip install -r requirements.txt
    ```
 
-4. **Run the application:**
+4. **Set the configurable parms as exported environment variables:**
+
+   All configuration for the application is taken from the environment as environment variables that start with "TRUSTMANAGER_"
+   ```
+    export TRUSTMANAGER_DATABASE_URL='sqlite:///certificates.db'
+
+    ## TrustManager-API can require AuthN|Z for non-GET endpoints
+    ## AuthN|Z defaults to disabled, and can be turned on with the parm "TRUSTMANAGER_REQUIRE_AUTH"
+    ## If you turn-on Auth, then you need to specify the Auth parms
+    ## If you are missing any of the Auth parms, it will run with Auth disabled
+    export TRUSTMANAGER_REQUIRE_AUTH=True
+    export TRUSTMANAGER_OIDC_CLIENT_ID=''
+    export TRUSTMANAGER_OIDC_CLIENT_SECRET=''
+    export TRUSTMANAGER_OIDC_METADATA_URL=''
+   ```
+5. **Run the application:**
    ```
    python src/app.py
    ```
