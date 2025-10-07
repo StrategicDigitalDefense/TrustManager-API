@@ -1,4 +1,4 @@
-from flask import Blueprint, request, jsonify, Response, url_for, send_file, send_from_directory, abort, redirect # type: ignore
+from flask import Blueprint, request, jsonify, Response, url_for, send_file, send_from_directory, abort, redirect, current_app # type: ignore
 #from flask import abort
 from datetime import datetime
 from cryptography import x509 # type: ignore
@@ -17,7 +17,7 @@ from db.database import *
 import syslog
 import subprocess
 from functools import wraps
-from app import oauth, app
+from app import oauth
 
 syslog.openlog("TrustManager-API",0,syslog.LOG_LOCAL7)
 
@@ -59,7 +59,7 @@ def require_oidc_role(required_role):
         @wraps(f)
         def decorated_function(*args, **kwargs):
             # Verify the Authorization header
-            if app.config['AUTH'] == True:
+            if current_app.config['AUTH'] == True:
                 auth_header = request.headers.get('Authorization')
                 if not auth_header or not auth_header.startswith('Bearer '):
                     return jsonify({'error': 'Unauthorized'}), 401
