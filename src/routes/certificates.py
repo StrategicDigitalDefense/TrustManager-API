@@ -1,5 +1,5 @@
+#sys.path.append('../')
 from flask import Blueprint, request, jsonify, Response, url_for, send_file, send_from_directory, abort, redirect, current_app # type: ignore
-#from flask import abort
 from datetime import datetime
 from cryptography import x509 # type: ignore
 from cryptography.hazmat.primitives import hashes, serialization # type: ignore
@@ -9,7 +9,6 @@ import sys
 import os
 import glob
 import logging
-sys.path.append('../')
 sys.path.append('../models')
 sys.path.append('../db')
 from models.certificates import Certificate
@@ -17,12 +16,28 @@ from db.database import *
 import syslog
 import subprocess
 from functools import wraps
-from app import oauth
+from authlib.integrations.flask_client import OAuth # type: ignore
+
 
 syslog.openlog("TrustManager-API",0,syslog.LOG_LOCAL7)
 
 
 certificates_bp = Blueprint('certificates', __name__)
+
+# Initialize OAuth
+oauth = OAuth(current_app)
+
+# Register the OIDC provider
+""" oauth.register(
+    name='oidc',
+    client_id=current_app.config['OIDC_CLIENT_ID'],
+    client_secret=current_app.config['OIDC_CLIENT_SECRET'],
+    server_metadata_url=current_app.config['OIDC_METADATA_URL'],
+    client_kwargs={
+        'scope': 'openid profile email roles'
+    }
+)
+ """
 
 def parse_certificate(pem_data):
     syslog.syslog(syslog.LOG_DEBUG,"Calling parse_certificate() with PEM payload\n%s" % (pem_data))
@@ -54,7 +69,7 @@ def parse_certificate(pem_data):
     }
 
 
-def require_oidc_role(required_role):
+""" def require_oidc_role(required_role):
     def decorator(f):
         @wraps(f)
         def decorated_function(*args, **kwargs):
@@ -80,10 +95,10 @@ def require_oidc_role(required_role):
             return f(*args, **kwargs)
         return decorated_function
     return decorator
-
+ """
 
 @certificates_bp.route('/Certificate', methods=['PUT'])
-@require_oidc_role('TrustAdmin')
+# @require_oidc_role('TrustAdmin')
 def add_certificate():
     pem_data = request.json.get('pem')
     if not pem_data:
@@ -133,7 +148,7 @@ def get_certificates():
     } for cert in certificates], 200
 
 @certificates_bp.route('/Trust', methods=['POST'])
-@require_oidc_role('TrustAdmin')
+# @require_oidc_role('TrustAdmin')
 def trust_certificate():
     cert_id = request.json.get('id')
     syslog.syslog(syslog.LOG_DEBUG,"Calling trust_certificate() with certificate ID %i" % (cert_id))
@@ -158,7 +173,7 @@ def trust_certificate():
     return jsonify({'message': 'Certificate trusted successfully'}), 200
 
 @certificates_bp.route('/Distrust', methods=['POST'])
-@require_oidc_role('TrustAdmin')
+# @require_oidc_role('TrustAdmin')
 def distrust_certificate():
     cert_id = request.json.get('id')
     if not cert_id:
@@ -267,7 +282,7 @@ BATCH_JOBS = {
 }
 
 @certificates_bp.route('/BatchJob', methods=['POST'])
-@require_oidc_role('TrustAdmin')
+# @require_oidc_role('TrustAdmin')
 def run_batch_job():
     """
     Initiate a batch job by name.
