@@ -12,6 +12,7 @@ import logging
 sys.path.append('../models')
 sys.path.append('../db')
 from models.certificates import Certificate
+from models.truststores import Truststore, TruststoreCertificate
 from db.database import *
 import syslog
 import subprocess
