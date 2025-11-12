@@ -329,6 +329,65 @@ paths:
                 items:
                   type: string
 
+  /Governance/Truststore:
+    post:
+      summary: Add a new governed truststore
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                truststore_type:
+                  type: string
+                  enum: [JKS, PKCS12, CAPI, PEM File(s)]
+                host:
+                  type: string
+                location:
+                  type: string
+                certificate_ids:
+                  type: array
+                  items:
+                    type: integer
+                notes:
+                  type: string
+      responses:
+        '201':
+          description: Truststore added successfully
+        '400':
+          description: Missing or invalid fields
+        '500':
+          description: Internal server error
+
+  /Governance/Truststore/{truststore_id}/notes:
+    post:
+      summary: Append notes to a governed truststore
+      parameters:
+        - name: truststore_id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                notes:
+                  type: string
+      responses:
+        '200':
+          description: Notes appended successfully
+        '400':
+          description: Missing or invalid fields
+        '404':
+          description: Truststore not found
+        '500':
+          description: Internal server error
+
 components:
   schemas:
     CertificateSummary:

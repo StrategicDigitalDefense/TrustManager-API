@@ -355,5 +355,70 @@ def download_specific_gpo_zip(zipname):
     zip_path = os.path.join(gpo_dir, zipname)
     if not os.path.exists(zip_path):
         syslog.syslog(syslog.LOG_INFO,'Requested GPO backup zip not found: %s' % (zipname))
-        return jsonify({'error': 'GPO backup zip not found.'}), 404
+        return jsonify({'error': 'GPO backup zip not found'}), 404
     return send_file(zip_path, as_attachment=True)
+
+@certificates_bp.route('/Governance/Truststore', methods=['POST'])
+def add_governed_truststore():
+    data = request.json
+    try:
+        truststore_type = data['truststore_type']
+        host = data['host']
+        location = data['location']
+        certificate_ids = data['certificate_ids']  # List of certificate IDs
+        notes = data.get('notes', "")
+
+        # Validate truststore type
+        if truststore_type not in ['JKS', 'PKCS12', 'CAPI', 'PEM File(s)']:
+            return jsonify({'error': 'Invalid truststore type.'}), 400
+
+        # Create the truststore entry
+        truststore = Truststore(
+            truststore_type=truststore_type,
+            host=host,
+            location=location,
+            notes=notes
+        )
+        db.session.add(truststore)
+        db.session.flush()  # Get the truststore ID before committing
+
+        # Add the certificates to the truststore
+        for cert_id in certificate_ids:
+            truststore_cert = TruststoreCertificate(
+                truststore_id=truststore.id,
+                certificate_id=cert_id
+            )
+            db.session.add(truststore_cert)
+
+        db.session.commit()
+        return jsonify({'message': 'Governed truststore added successfully.'}), 201
+
+    except KeyError as e:
+        return jsonify({'error': f'Missing required field: {str(e)}'}), 400
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({'error': f'Failed to add governed truststore: {str(e)}'}), 500
+
+@certificates_bp.route('/Governance/Truststore/<int:truststore_id>/notes', methods=['POST'])
+def append_truststore_notes(truststore_id):
+    data = request.json
+    try:
+        notes = data['notes']
+
+        # Find the truststore
+        truststore = Truststore.query.get(truststore_id)
+        if not truststore:
+            return jsonify({'error': 'Truststore not found.'}), 404
+
+        # Append the notes and update the last reviewed timestamp
+        truststore.notes += f"\n{datetime.utcnow().isoformat()}: {notes}"
+        truststore.last_reviewed = datetime.utcnow()
+        db.session.commit()
+
+        return jsonify({'message': 'Notes appended successfully.'}), 200
+
+    except KeyError:
+        return jsonify({'error': 'Missing required field: notes'}), 400
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({'error': f'Failed to append notes: {str(e)}'}), 500

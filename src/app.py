@@ -1,6 +1,7 @@
 from flask import Flask, config # type: ignore
 from db.database import db
 from models.certificates import Certificate  # <-- Import your model here!
+from models.truststores import Truststore, TruststoreCertificate
 from routes.certificates import certificates_bp
 from waitress import serve # type: ignore
 from authlib.integrations.flask_client import OAuth # type: ignore
