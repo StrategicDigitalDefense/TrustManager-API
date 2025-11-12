@@ -151,6 +151,84 @@ function loadGpoZips() {
         });
 }
 
+function addTruststore() {
+    const truststoreType = document.getElementById('truststoreType').value;
+    const host = document.getElementById('truststoreHost').value;
+    const location = document.getElementById('truststoreLocation').value;
+    const certificateIds = document.getElementById('truststoreCertificates').value.split(',').map(id => parseInt(id.trim()));
+    const notes = document.getElementById('truststoreNotes').value;
+
+    fetch('/Governance/Truststore', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+            truststore_type: truststoreType,
+            host,
+            location,
+            certificate_ids: certificateIds,
+            notes
+        })
+    })
+    .then(res => res.json())
+    .then(data => {
+        document.getElementById('addTruststoreMsg').textContent = data.message || data.error;
+        fetchTruststores();
+    })
+    .catch(err => {
+        document.getElementById('addTruststoreMsg').textContent = 'Error adding truststore.';
+    });
+}
+
+function fetchTruststores() {
+    fetch('/Governance/Truststore')
+    .then(res => res.json())
+    .then(data => {
+        const tbody = document.getElementById('truststoreTable').querySelector('tbody');
+        tbody.innerHTML = '';
+        data.forEach(truststore => {
+            const tr = document.createElement('tr');
+            tr.innerHTML = `
+                <td>${truststore.id}</td>
+                <td>${truststore.truststore_type}</td>
+                <td>${truststore.host}</td>
+                <td>${truststore.location}</td>
+                <td>${truststore.last_reviewed}</td>
+                <td>${truststore.notes}</td>
+                <td>
+                    <button onclick="selectTruststore(${truststore.id})">Select</button>
+                </td>
+            `;
+            tbody.appendChild(tr);
+        });
+    })
+    .catch(err => {
+        document.getElementById('truststoreMsg').textContent = 'Error fetching truststores.';
+    });
+}
+
+function addTruststoreNotes() {
+    const truststoreId = document.getElementById('truststoreId').value;
+    const notes = document.getElementById('truststoreNewNotes').value;
+
+    fetch(`/Governance/Truststore/${truststoreId}/notes`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ notes })
+    })
+    .then(res => res.json())
+    .then(data => {
+        document.getElementById('addTruststoreNotesMsg').textContent = data.message || data.error;
+        fetchTruststores();
+    })
+    .catch(err => {
+        document.getElementById('addTruststoreNotesMsg').textContent = 'Error adding notes.';
+    });
+}
+
+function selectTruststore(id) {
+    document.getElementById('truststoreId').value = id;
+}
+
 document.addEventListener('DOMContentLoaded', function() {
     fetchCertificates();
     loadBatchJobs();

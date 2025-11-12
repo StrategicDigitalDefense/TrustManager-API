@@ -59,6 +59,59 @@
         <h3>Previous Group Policy (GPO) ZIPs</h3>
         <ul id="gpoZipList"></ul>
     </div>
+    <section>
+        <h2>Governed Truststores</h2>
+        <div>
+            <h3>Add a New Truststore</h3>
+            <form id="addTruststoreForm">
+                <label for="truststoreType">Truststore Type:</label>
+                <select id="truststoreType">
+                    <option value="JKS">JKS</option>
+                    <option value="PKCS12">PKCS12</option>
+                    <option value="CAPI">CAPI</option>
+                    <option value="PEM File(s)">PEM File(s)</option>
+                </select><br>
+                <label for="truststoreHost">Host:</label>
+                <input type="text" id="truststoreHost" placeholder="Host where truststore resides"><br>
+                <label for="truststoreLocation">Location:</label>
+                <input type="text" id="truststoreLocation" placeholder="Location on the host"><br>
+                <label for="truststoreCertificates">Certificate IDs (comma-separated):</label>
+                <input type="text" id="truststoreCertificates" placeholder="e.g., 1,2,3"><br>
+                <label for="truststoreNotes">Notes:</label>
+                <textarea id="truststoreNotes" rows="4" cols="50" placeholder="Initial notes"></textarea><br>
+                <button type="button" onclick="addTruststore()">Add Truststore</button>
+            </form>
+            <div id="addTruststoreMsg"></div>
+        </div>
+        <div>
+            <h3>View Truststores</h3>
+            <button onclick="fetchTruststores()">Refresh List</button>
+            <table id="truststoreTable">
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Type</th>
+                        <th>Host</th>
+                        <th>Location</th>
+                        <th>Last Reviewed</th>
+                        <th>Notes</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody></tbody>
+            </table>
+            <div id="truststoreMsg"></div>
+        </div>
+        <div>
+            <h3>Add Notes to Truststore</h3>
+            <label for="truststoreId">Truststore ID:</label>
+            <input type="number" id="truststoreId" placeholder="Truststore ID"><br>
+            <label for="truststoreNewNotes">Notes:</label>
+            <textarea id="truststoreNewNotes" rows="4" cols="50" placeholder="Additional notes"></textarea><br>
+            <button type="button" onclick="addTruststoreNotes()">Add Notes</button>
+            <div id="addTruststoreNotesMsg"></div>
+        </div>
+    </section>
     <script src="/static/app.js"></script>
 </body>
 </html>

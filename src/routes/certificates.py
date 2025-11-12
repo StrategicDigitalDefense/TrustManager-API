@@ -422,3 +422,18 @@ def append_truststore_notes(truststore_id):
     except Exception as e:
         db.session.rollback()
         return jsonify({'error': f'Failed to append notes: {str(e)}'}), 500
+
+@certificates_bp.route('/Governance/Truststore', methods=['GET'])
+def get_governed_truststores():
+    truststores = Truststore.query.all()
+    return jsonify([
+        {
+            'id': ts.id,
+            'truststore_type': ts.truststore_type,
+            'host': ts.host,
+            'location': ts.location,
+            'last_reviewed': ts.last_reviewed.isoformat(),
+            'notes': ts.notes
+        }
+        for ts in truststores
+    ])
