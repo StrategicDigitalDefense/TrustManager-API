@@ -9,10 +9,12 @@ import sys
 import os
 import glob
 import logging
+import json  # Add this import at the top of the file
 sys.path.append('../models')
 sys.path.append('../db')
 from models.certificates import Certificate
 from models.truststores import Truststore, TruststoreCertificate
+from models.contacts import Contact
 from db.database import *
 import syslog
 import subprocess
@@ -41,17 +43,30 @@ oauth = OAuth(current_app)
  """
 
 def parse_certificate(pem_data):
-    syslog.syslog(syslog.LOG_DEBUG,"Calling parse_certificate() with PEM payload\n%s" % (pem_data))
-    cert = x509.load_pem_x509_certificate(pem_data.encode(), default_backend())
-    subject = cert.subject.rfc4514_string()
-    issuer = cert.issuer.rfc4514_string()
-    valid_from = cert.not_valid_before
-    valid_to = cert.not_valid_after
-    serial = str(cert.serial_number)
-    fingerprint = cert.fingerprint(hashes.SHA256()).hex()
-    syslog.syslog(
-        syslog.LOG_DEBUG,
-        {
+    syslog.syslog(syslog.LOG_INFO, "Calling parse_certificate() with PEM payload\n%s" % (pem_data))
+    try:
+        cert = x509.load_pem_x509_certificate(pem_data.encode(), default_backend())
+        subject = cert.subject.rfc4514_string()
+        issuer = cert.issuer.rfc4514_string()
+        valid_from = cert.not_valid_before
+        valid_to = cert.not_valid_after
+        serial = str(cert.serial_number)
+        fingerprint = cert.fingerprint(hashes.SHA256()).hex()
+
+        # Log the parsed certificate fields as a JSON string
+        syslog.syslog(
+            syslog.LOG_INFO,
+            json.dumps({
+                'subject': subject,
+                'issuer': issuer,
+                'valid_from': valid_from.isoformat(),
+                'valid_to': valid_to.isoformat(),
+                'serial': serial,
+                'fingerprint': fingerprint
+            })
+        )
+
+        return {
             'subject': subject,
             'issuer': issuer,
             'valid_from': valid_from,
@@ -59,15 +74,10 @@ def parse_certificate(pem_data):
             'serial': serial,
             'fingerprint': fingerprint
         }
-    )
-    return {
-        'subject': subject,
-        'issuer': issuer,
-        'valid_from': valid_from,
-        'valid_to': valid_to,
-        'serial': serial,
-        'fingerprint': fingerprint
-    }
+    except Exception as e:
+        # Log the error and re-raise it
+        syslog.syslog(syslog.LOG_ERR, f"Error parsing certificate: {str(e)}")
+        raise
 
 
 """ def require_oidc_role(required_role):
@@ -104,10 +114,12 @@ def add_certificate():
     pem_data = request.json.get('pem')
     if not pem_data:
         return jsonify({'error': 'PEM data is required'}), 400
+    else:
+        syslog.syslog(syslog.LOG_INFO,"Calling add_certificate() with PEM payload\n%s" % (pem_data))
     try:
         fields = parse_certificate(pem_data)
     except Exception as e:
-        logging.error(f"Certificate parsing failed: {str(e)}")
+        syslog.syslog(f"Certificate parsing failed: {str(e)}")
         return jsonify({'error': f'Failed to parse certificate: {str(e)}'}), 400
 
     new_certificate = Certificate(
@@ -368,17 +380,24 @@ def add_governed_truststore():
         location = data['location']
         certificate_ids = data['certificate_ids']  # List of certificate IDs
         notes = data.get('notes', "")
+        contact_id = data.get('contact_id')
 
         # Validate truststore type
         if truststore_type not in ['JKS', 'PKCS12', 'CAPI', 'PEM File(s)']:
             return jsonify({'error': 'Invalid truststore type.'}), 400
+
+        # Validate contact
+        contact = Contact.query.get(contact_id)
+        if not contact:
+            return jsonify({'error': 'Contact not found.'}), 404
 
         # Create the truststore entry
         truststore = Truststore(
             truststore_type=truststore_type,
             host=host,
             location=location,
-            notes=notes
+            notes=notes,
+            contact_id=contact_id
         )
         db.session.add(truststore)
         db.session.flush()  # Get the truststore ID before committing
@@ -437,4 +456,54 @@ def get_governed_truststores():
             'notes': ts.notes
         }
         for ts in truststores
+    ])
+
+@certificates_bp.route('/Contacts', methods=['POST'])
+def create_contact():
+    data = request.json
+    try:
+        name = data['name']
+        contact = data['contact']
+
+        new_contact = Contact(name=name, contact=contact)
+        db.session.add(new_contact)
+        db.session.commit()
+
+        return jsonify({'message': 'Contact created successfully.', 'id': new_contact.id}), 201
+    except KeyError as e:
+        return jsonify({'error': f'Missing required field: {str(e)}'}), 400
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({'error': f'Failed to create contact: {str(e)}'}), 500
+
+@certificates_bp.route('/Contacts/<int:contact_id>', methods=['PUT'])
+def edit_contact(contact_id):
+    data = request.json
+    try:
+        contact = Contact.query.get(contact_id)
+        if not contact:
+            return jsonify({'error': 'Contact not found.'}), 404
+
+        contact.name = data.get('name', contact.name)
+        contact.contact = data.get('contact', contact.contact)
+        db.session.commit()
+
+        return jsonify({'message': 'Contact updated successfully.'}), 200
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({'error': f'Failed to update contact: {str(e)}'}), 500
+
+@certificates_bp.route('/Contacts', methods=['GET'])
+def list_contacts():
+    """
+    List all contacts.
+    """
+    contacts = Contact.query.all()
+    return jsonify([
+        {
+            'id': contact.id,
+            'name': contact.name,
+            'contact': contact.contact
+        }
+        for contact in contacts
     ])

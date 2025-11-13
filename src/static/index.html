@@ -79,6 +79,8 @@
                 <input type="text" id="truststoreCertificates" placeholder="e.g., 1,2,3"><br>
                 <label for="truststoreNotes">Notes:</label>
                 <textarea id="truststoreNotes" rows="4" cols="50" placeholder="Initial notes"></textarea><br>
+                <label for="truststoreContact">Contact:</label>
+                <select id="truststoreContact"></select><br>
                 <button type="button" onclick="addTruststore()">Add Truststore</button>
             </form>
             <div id="addTruststoreMsg"></div>
@@ -110,6 +112,36 @@
             <textarea id="truststoreNewNotes" rows="4" cols="50" placeholder="Additional notes"></textarea><br>
             <button type="button" onclick="addTruststoreNotes()">Add Notes</button>
             <div id="addTruststoreNotesMsg"></div>
+        </div>
+    </section>
+    <section>
+        <h2>Manage Contacts</h2>
+        <div style="display: flex; gap: 2em;">
+            <div>
+                <h3>Add a New Contact</h3>
+                <form id="addContactForm">
+                    <label for="contactName">Name:</label>
+                    <input type="text" id="contactName" placeholder="Contact Name"><br>
+                    <label for="contactInfo">Contact:</label>
+                    <input type="text" id="contactInfo" placeholder="Email, Phone, etc."><br>
+                    <button type="button" onclick="addContact()">Add Contact</button>
+                </form>
+                <div id="addContactMsg"></div>
+            </div>
+            <div>
+                <h3>Known Contacts</h3>
+                <table id="contactsTable">
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Name</th>
+                            <th>Contact</th>
+                        </tr>
+                    </thead>
+                    <tbody></tbody>
+                </table>
+                <div id="contactsMsg"></div>
+            </div>
         </div>
     </section>
     <script src="/static/app.js"></script>

@@ -10,6 +10,8 @@ class Truststore(db.Model):
     location = db.Column(db.String, nullable=False)
     last_reviewed = db.Column(db.DateTime, nullable=False, default=datetime.utcnow)
     notes = db.Column(db.Text, nullable=False, default="")  # Append-only text field
+    contact_id = db.Column(db.Integer, db.ForeignKey('CONTACTS.id'), nullable=True)  # New field
+    contact = db.relationship('Contact', backref=db.backref('truststores', lazy=True))
 
 class TruststoreCertificate(db.Model):
     __tablename__ = 'TRUSTSTORE_CERTIFICATES'

@@ -157,6 +157,7 @@ function addTruststore() {
     const location = document.getElementById('truststoreLocation').value;
     const certificateIds = document.getElementById('truststoreCertificates').value.split(',').map(id => parseInt(id.trim()));
     const notes = document.getElementById('truststoreNotes').value;
+    const contactId = document.getElementById('truststoreContact').value; // Get the selected contact ID
 
     fetch('/Governance/Truststore', {
         method: 'POST',
@@ -166,7 +167,8 @@ function addTruststore() {
             host,
             location,
             certificate_ids: certificateIds,
-            notes
+            notes,
+            contact_id: parseInt(contactId) // Ensure it's sent as an integer
         })
     })
     .then(res => res.json())
@@ -229,8 +231,61 @@ function selectTruststore(id) {
     document.getElementById('truststoreId').value = id;
 }
 
+function addContact() {
+    const name = document.getElementById('contactName').value;
+    const contact = document.getElementById('contactInfo').value;
+
+    fetch('/Contacts', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ name, contact })
+    })
+    .then(res => res.json())
+    .then(data => {
+        document.getElementById('addContactMsg').textContent = data.message || data.error;
+        loadContacts();
+    })
+    .catch(err => {
+        document.getElementById('addContactMsg').textContent = 'Error adding contact.';
+    });
+}
+
+function loadContacts() {
+    fetch('/Contacts')
+        .then(res => res.json())
+        .then(data => {
+            // Populate the dropdown
+            const select = document.getElementById('truststoreContact');
+            select.innerHTML = ''; // Clear existing options
+            data.forEach(contact => {
+                const opt = document.createElement('option');
+                opt.value = contact.id;
+                opt.textContent = `${contact.name} (${contact.contact})`;
+                select.appendChild(opt);
+            });
+
+            // Populate the table
+            const tbody = document.getElementById('contactsTable').querySelector('tbody');
+            tbody.innerHTML = ''; // Clear existing rows
+            data.forEach(contact => {
+                const tr = document.createElement('tr');
+                tr.innerHTML = `
+                    <td>${contact.id}</td>
+                    <td>${contact.name}</td>
+                    <td>${contact.contact}</td>
+                `;
+                tbody.appendChild(tr);
+            });
+        })
+        .catch(err => {
+            console.error("Error loading contacts:", err);
+            document.getElementById('contactsMsg').textContent = 'Error loading contacts.';
+        });
+}
+
 document.addEventListener('DOMContentLoaded', function() {
     fetchCertificates();
     loadBatchJobs();
     loadGpoZips();
+    loadContacts(); // Ensure contacts are loaded when the page loads
 });
