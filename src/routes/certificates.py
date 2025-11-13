@@ -453,7 +453,12 @@ def get_governed_truststores():
             'host': ts.host,
             'location': ts.location,
             'last_reviewed': ts.last_reviewed.isoformat(),
-            'notes': ts.notes
+            'notes': ts.notes,
+            'contact': {
+                'id': ts.contact.id if ts.contact else None,
+                'name': ts.contact.name if ts.contact else None,
+                'contact': ts.contact.contact if ts.contact else None
+            } if ts.contact else None
         }
         for ts in truststores
     ])

@@ -196,6 +196,7 @@ function fetchTruststores() {
                 <td>${truststore.location}</td>
                 <td>${truststore.last_reviewed}</td>
                 <td>${truststore.notes}</td>
+                <td>${truststore.contact ? `${truststore.contact.name} (${truststore.contact.contact})` : 'No Contact'}</td>
                 <td>
                     <button onclick="selectTruststore(${truststore.id})">Select</button>
                 </td>
