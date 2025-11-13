@@ -308,6 +308,7 @@ curl -X GET http://localhost:5100/BatchJob/list
 A simple web GUI is available for administrators at [http://localhost:5100/admin](http://localhost:5100/admin).
 
 ![TrustManager GUI](TrustManager-GUI.jpeg)
+![TrustManager GUI - Governance](TrustManager-GUI-Governance.png)
 
 **Features:**
 
