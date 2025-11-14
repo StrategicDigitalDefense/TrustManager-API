@@ -309,6 +309,7 @@ A simple web GUI is available for administrators at [http://localhost:5100/admin
 
 ![TrustManager GUI](TrustManager-GUI.jpeg)
 ![TrustManager GUI - Governance](TrustManager-GUI-Governance.png)
+![TrustManager GUI - Governance Example](TrustManager-GUI-Governance-Example.png)
 
 **Features:**
 
