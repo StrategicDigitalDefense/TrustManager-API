@@ -458,7 +458,17 @@ def get_governed_truststores():
                 'id': ts.contact.id if ts.contact else None,
                 'name': ts.contact.name if ts.contact else None,
                 'contact': ts.contact.contact if ts.contact else None
-            } if ts.contact else None
+            } if ts.contact else None,
+            'certificates': [
+                {
+                    'id': cert.certificate.id,
+                    'subject': cert.certificate.subject,
+                    'serial': cert.certificate.serial,
+                    'valid_from': cert.certificate.valid_from.isoformat(),
+                    'valid_to': cert.certificate.valid_to.isoformat()
+                }
+                for cert in ts.certificates
+            ]
         }
         for ts in truststores
     ])

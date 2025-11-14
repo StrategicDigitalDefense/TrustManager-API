@@ -188,6 +188,15 @@ function fetchTruststores() {
         const tbody = document.getElementById('truststoreTable').querySelector('tbody');
         tbody.innerHTML = '';
         data.forEach(truststore => {
+            const certificates = truststore.certificates.map(cert => `
+                <div>
+                    <strong>${cert.subject}</strong><br>
+                    Serial: ${cert.serial}<br>
+                    Valid From: ${cert.valid_from}<br>
+                    Valid To: ${cert.valid_to}
+                </div>
+            `).join('<hr>'); // Separate certificates with a horizontal line
+
             const tr = document.createElement('tr');
             tr.innerHTML = `
                 <td>${truststore.id}</td>
@@ -197,6 +206,7 @@ function fetchTruststores() {
                 <td>${truststore.last_reviewed}</td>
                 <td>${truststore.notes}</td>
                 <td>${truststore.contact ? `${truststore.contact.name} (${truststore.contact.contact})` : 'No Contact'}</td>
+                <td>${certificates || 'No Certificates'}</td>
                 <td>
                     <button onclick="selectTruststore(${truststore.id})">Select</button>
                 </td>
