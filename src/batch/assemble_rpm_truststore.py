@@ -1,11 +1,12 @@
 import sys
 import os
 import tempfile
+import subprocess
 
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..')))
 
-from flask import Flask
+from flask import Flask # type: ignore
 from db.database import db
 from models.certificates import Certificate
 
@@ -22,14 +23,23 @@ def assemble_rpm():
         print("No trusted certificates found.")
         return
 
+    print(f"Number of trusted certificates: {len(trusted_certs)}")
+
     with tempfile.TemporaryDirectory() as build_root:
         anchors_dir = os.path.join(build_root, CERTS_DIR.lstrip("/"))
         os.makedirs(anchors_dir, exist_ok=True)
 
+        print(f"Build root: {build_root}")
+        print(f"Anchors directory: {anchors_dir}")
+        print(f"Contents of anchors directory: {os.listdir(anchors_dir) if os.path.exists(anchors_dir) else 'Directory does not exist'}")
+
         # Write each cert as a separate file and set permissions/ownership
+        rpm_build_root_certs_dir = os.path.join(build_root, "BUILDROOT", CERTS_DIR.lstrip("/"))
+        os.makedirs(rpm_build_root_certs_dir, exist_ok=True)
+
         for idx, cert in enumerate(trusted_certs):
             filename = f"trusted_cert_{idx}.pem"
-            cert_path = os.path.join(anchors_dir, filename)
+            cert_path = os.path.join(rpm_build_root_certs_dir, filename)
             with open(cert_path, "w") as f:
                 f.write(cert.pem.strip() + "\n")
             os.chmod(cert_path, 0o644)
@@ -37,8 +47,16 @@ def assemble_rpm():
                 os.chown(cert_path, 0, 0)  # root:root
             except PermissionError:
                 print(f"Warning: Could not change ownership of {cert_path}. Run as root for correct ownership.")
+            print(f"Certificate staged at: {cert_path}")  # Debug statement
+        
+        print(f"Contents of anchors directory: {os.listdir(rpm_build_root_certs_dir) if os.path.exists(rpm_build_root_certs_dir) else 'Directory does not exist'}")
 
-        # Create the spec file
+        # Generate the list of files for the %files section
+        files_section = "\n".join([f"%attr(0644,root,root) {CERTS_DIR}/{os.path.basename(cert_path)}"
+            for cert_path in os.listdir(rpm_build_root_certs_dir)])
+        print(f"%files section:\n{files_section}")  # Debug statement
+
+        # Write the spec file
         spec_path = os.path.join(build_root, "trusted-certs.spec")
         with open(spec_path, "w") as spec:
             spec.write(f"""
@@ -55,7 +73,7 @@ Requires(postun): update-ca-trust
 Trusted certificates from TrustManager API.
 
 %files
-%attr(0644,root,root) {CERTS_DIR}/*
+{files_section}
 
 %post
 update-ca-trust enable
@@ -67,8 +85,8 @@ update-ca-trust extract
 %prep
 %build
 %install
-mkdir -p $RPM_BUILD_ROOT{CERTS_DIR}
-cp -a {anchors_dir}/* $RPM_BUILD_ROOT{CERTS_DIR}/
+mkdir -p {build_root}{CERTS_DIR}
+cd {build_root}{CERTS_DIR}
 
 %clean
 rm -rf $RPM_BUILD_ROOT
@@ -81,6 +99,7 @@ rm -rf $RPM_BUILD_ROOT
             "--buildroot", build_root,
             "-bb", spec_path
         ]
+        print(f"Running rpmbuild command: {' '.join(rpmbuild_cmd)}")
         subprocess.run(rpmbuild_cmd, check=True)
 
         # Copy the RPM to the current directory

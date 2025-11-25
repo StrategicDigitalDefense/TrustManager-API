@@ -290,7 +290,7 @@ BATCH_JOBS = {
     "assemble_jks": "batch/assemble_jks.py",
     "assemble_pfx": "batch/assemble_pfx.py",
     "assemble_trusted_pem": "batch/assemble_trusted_pem.py",
-    "assemble_rpm": "batch/assemble_rpm.py",
+    "assemble_rpm": "batch/assemble_rpm_truststore.py",
     "assemble_group_policy": "batch/assemble_group_policy.py"
 }
 

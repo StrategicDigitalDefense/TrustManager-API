@@ -12,6 +12,8 @@ RUN python3 -m pip install -v -r requirements.txt
 RUN yum -y install java-17-openjdk
 # Need openssl for creating PKCS#12 (PFX) bundles
 RUN yum -y install openssl openssl-devel
+# Need rpmbuild for building RPM packages
+RUN yum -y install rpm-build
 # Bash, just in case we have to get an interactive TTY in there
 RUN yum -y install bash
 COPY src/ .
