@@ -286,6 +286,14 @@ def get_truststore_file(format):
 def admin_gui():
     return send_from_directory('static', 'index.html')
 
+@certificates_bp.route('/style.css')
+def admin_style():
+    return send_from_directory('static', 'style.css')
+
+@certificates_bp.route('/favicon.ico')
+def admin_favicon():
+    return send_from_directory('static', 'favicon.ico')
+
 BATCH_JOBS = {
     "assemble_jks": "batch/assemble_jks.py",
     "assemble_pfx": "batch/assemble_pfx.py",

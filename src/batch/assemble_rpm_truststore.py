@@ -85,11 +85,11 @@ update-ca-trust extract
 %prep
 %build
 %install
-mkdir -p {build_root}{CERTS_DIR}
-cd {build_root}{CERTS_DIR}
+#mkdir -p {build_root}{CERTS_DIR}
+#cd {build_root}{CERTS_DIR}
 
 %clean
-rm -rf $RPM_BUILD_ROOT
+#rm -rf $RPM_BUILD_ROOT
 """)
 
         # Build the RPM
