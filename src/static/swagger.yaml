@@ -272,7 +272,7 @@ paths:
               properties:
                 job:
                   type: string
-                  enum: [assemble_jks, assemble_pfx, assemble_pem, assemble_rpm]
+                  enum: [assemble_jks, assemble_pfx, assemble_pem, assemble_rpm, assemble_group_policy]
                   description: Name of the batch job to run
       responses:
         '200':
@@ -387,6 +387,84 @@ paths:
           description: Truststore not found
         '500':
           description: Internal server error
+
+  /Contacts:
+    post:
+      summary: Create a new contact
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                name:
+                  type: string
+                email:
+                  type: string
+                phone:
+                  type: string
+      responses:
+        '201':
+          description: Contact created successfully
+        '400':
+          description: Missing or invalid fields
+        '500':
+          description: Internal server error
+
+  /Contacts/{contact_id}:
+    put:
+      summary: Edit an existing contact
+      parameters:
+        - name: contact_id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                name:
+                  type: string
+                email:
+                  type: string
+                phone:
+                  type: string
+      responses:
+        '200':
+          description: Contact updated successfully
+        '400':
+          description: Missing or invalid fields
+        '404':
+          description: Contact not found
+        '500':
+          description: Internal server error
+
+  /Contacts:
+    get:
+      summary: List all contacts
+      responses:
+        '200':
+          description: List of contacts
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    id:
+                      type: integer
+                    name:
+                      type: string
+                    email:
+                      type: string
+                    phone:
+                      type: string
 
 components:
   schemas:
