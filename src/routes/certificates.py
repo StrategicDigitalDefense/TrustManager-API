@@ -286,6 +286,10 @@ def get_truststore_file(format):
 def admin_gui():
     return send_from_directory('static', 'index.html')
 
+@certificates_bp.route('/swagger')
+def swagger_ui():
+    return send_from_directory('static', 'swagger.html')
+
 @certificates_bp.route('/style.css')
 def admin_style():
     return send_from_directory('static', 'style.css')
