@@ -2,6 +2,7 @@ import sys
 import os
 import tempfile
 import subprocess
+import shutil
 
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..')))
@@ -14,7 +15,8 @@ RPM_NAME = "trusted-certs"
 RPM_VERSION = "1.0.0"
 RPM_RELEASE = "1"
 RPM_ARCH = "noarch"
-RPM_OUTPUT = "static/trusted-certs-1.0.0-1.noarch.rpm"
+RPM_FILENAME = f"{RPM_NAME}-{RPM_VERSION}-{RPM_RELEASE}.{RPM_ARCH}.rpm"
+RPM_OUTPUT = os.path.join("static", RPM_FILENAME)
 CERTS_DIR = "/etc/pki/ca-trust/source/anchors"
 
 def assemble_rpm():
@@ -26,86 +28,80 @@ def assemble_rpm():
     print(f"Number of trusted certificates: {len(trusted_certs)}")
 
     with tempfile.TemporaryDirectory() as build_root:
-        anchors_dir = os.path.join(build_root, CERTS_DIR.lstrip("/"))
-        os.makedirs(anchors_dir, exist_ok=True)
+        buildroot_dir = os.path.join(build_root, "BUILDROOT")
+        build_dir = os.path.join(build_root, "BUILD")
+        rpms_dir = os.path.join(build_root, "RPMS")
+        sources_dir = os.path.join(build_root, "SOURCES")
+        specs_dir = os.path.join(build_root, "SPECS")
+        srpms_dir = os.path.join(build_root, "SRPMS")
+        for directory in (build_root, buildroot_dir, build_dir, rpms_dir, sources_dir, specs_dir, srpms_dir):
+            os.makedirs(directory, exist_ok=True)
 
-        print(f"Build root: {build_root}")
-        print(f"Anchors directory: {anchors_dir}")
-        print(f"Contents of anchors directory: {os.listdir(anchors_dir) if os.path.exists(anchors_dir) else 'Directory does not exist'}")
+        staged_certs_dir = os.path.join(sources_dir, "certs")
+        os.makedirs(staged_certs_dir, exist_ok=True)
 
-        # Write each cert as a separate file and set permissions/ownership
-        rpm_build_root_certs_dir = os.path.join(build_root, "BUILDROOT", CERTS_DIR.lstrip("/"))
-        os.makedirs(rpm_build_root_certs_dir, exist_ok=True)
-
+        # Write each cert as a separate file for the payload
         for idx, cert in enumerate(trusted_certs):
             filename = f"trusted_cert_{idx}.pem"
-            cert_path = os.path.join(rpm_build_root_certs_dir, filename)
+            cert_path = os.path.join(staged_certs_dir, filename)
             with open(cert_path, "w") as f:
                 f.write(cert.pem.strip() + "\n")
             os.chmod(cert_path, 0o644)
-            try:
-                os.chown(cert_path, 0, 0)  # root:root
-            except PermissionError:
-                print(f"Warning: Could not change ownership of {cert_path}. Run as root for correct ownership.")
-            print(f"Certificate staged at: {cert_path}")  # Debug statement
-        
-        print(f"Contents of anchors directory: {os.listdir(rpm_build_root_certs_dir) if os.path.exists(rpm_build_root_certs_dir) else 'Directory does not exist'}")
+            print(f"Certificate staged at: {cert_path}")
 
-        # Generate the list of files for the %files section
-        files_section = "\n".join([f"%attr(0644,root,root) {CERTS_DIR}/{os.path.basename(cert_path)}"
-            for cert_path in os.listdir(rpm_build_root_certs_dir)])
-        print(f"%files section:\n{files_section}")  # Debug statement
+        files_section = "\n".join(
+            f"%attr(0644,root,root) {CERTS_DIR}/{filename}"
+            for filename in sorted(os.listdir(staged_certs_dir))
+        )
+        print(f"%files section:\n{files_section}")
 
-        # Write the spec file
-        spec_path = os.path.join(build_root, "trusted-certs.spec")
+        spec_path = os.path.join(specs_dir, f"{RPM_NAME}.spec")
         with open(spec_path, "w") as spec:
             spec.write(f"""
-Name:           {RPM_NAME}
-Version:        {RPM_VERSION}
-Release:        {RPM_RELEASE}
-Summary:        Trusted certificates from TrustManager API
-License:        ASL 2.0
-BuildArch:      {RPM_ARCH}
-Requires(post): update-ca-trust
-Requires(postun): update-ca-trust
+Name:               {RPM_NAME}
+Version:            {RPM_VERSION}
+Release:            {RPM_RELEASE}
+Summary:            Trusted certificates from TrustManager API
+BuildArch:          {RPM_ARCH}
+License:            BSD Four-Clause License
+Requires:           ca-certificates
+Requires(post):     update-ca-trust
+Requires(postun):   update-ca-trust
 
 %description
 Trusted certificates from TrustManager API.
+
+%prep
+%build
+%install
+mkdir -p %{{buildroot}}{CERTS_DIR}
+cp -p %{{_sourcedir}}/certs/*.pem %{{buildroot}}{CERTS_DIR}/
 
 %files
 {files_section}
 
 %post
-update-ca-trust enable
-update-ca-trust extract
+/usr/bin/update-ca-trust
 
 %postun
-update-ca-trust extract
-
-%prep
-%build
-%install
-#mkdir -p {build_root}{CERTS_DIR}
-#cd {build_root}{CERTS_DIR}
+/usr/bin/update-ca-trust
 
 %clean
-#rm -rf $RPM_BUILD_ROOT
 """)
 
-        # Build the RPM
         rpmbuild_cmd = [
             "rpmbuild",
             "--define", f"_topdir {build_root}",
-            "--buildroot", build_root,
+            "--buildroot", buildroot_dir,
             "-bb", spec_path
         ]
         print(f"Running rpmbuild command: {' '.join(rpmbuild_cmd)}")
         subprocess.run(rpmbuild_cmd, check=True)
 
-        # Copy the RPM to the current directory
-        rpm_file = os.path.join(build_root, "RPMS", RPM_ARCH, RPM_OUTPUT)
+        rpm_file = os.path.join(rpms_dir, RPM_ARCH, RPM_FILENAME)
         if os.path.exists(rpm_file):
-            os.rename(rpm_file, RPM_OUTPUT)
+            os.makedirs(os.path.dirname(RPM_OUTPUT), exist_ok=True)
+            shutil.copy2(rpm_file, RPM_OUTPUT)
             print(f"RPM assembled at {RPM_OUTPUT}")
         else:
             print("RPM build failed.")
