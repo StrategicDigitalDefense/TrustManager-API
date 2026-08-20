@@ -10,6 +10,8 @@ paths:
   /Certificate:
     put:
       summary: Add a new certificate
+      security:
+        - openIdConnect: []
       requestBody:
         required: true
         content:
@@ -53,6 +55,8 @@ paths:
   /Trust:
     post:
       summary: Trust a certificate (only self-signed)
+      security:
+        - openIdConnect: []
       requestBody:
         required: true
         content:
@@ -103,6 +107,8 @@ paths:
   /Distrust:
     post:
       summary: Distrust a certificate
+      security:
+        - openIdConnect: []
       requestBody:
         required: true
         content:
@@ -263,6 +269,8 @@ paths:
   /BatchJob:
     post:
       summary: Run a batch job
+      security:
+        - openIdConnect: []
       requestBody:
         required: true
         content:
@@ -332,6 +340,8 @@ paths:
   /Governance/Truststore:
     post:
       summary: Add a new governed truststore
+      security:
+        - openIdConnect: []
       requestBody:
         required: true
         content:
@@ -363,6 +373,8 @@ paths:
   /Governance/Truststore/{truststore_id}/notes:
     post:
       summary: Append notes to a governed truststore
+      security:
+        - openIdConnect: []
       parameters:
         - name: truststore_id
           in: path
@@ -391,6 +403,8 @@ paths:
   /Contacts:
     post:
       summary: Create a new contact
+      security:
+        - openIdConnect: []
       requestBody:
         required: true
         content:
@@ -415,6 +429,8 @@ paths:
   /Contacts/{contact_id}:
     put:
       summary: Edit an existing contact
+      security:
+        - openIdConnect: []
       parameters:
         - name: contact_id
           in: path
@@ -445,6 +461,10 @@ paths:
           description: Internal server error
 
 components:
+  securitySchemes:
+    openIdConnect:
+      type: openIdConnect
+      openIdConnectUrl: /oidc/metadata
   schemas:
     CertificateSummary:
       type: object

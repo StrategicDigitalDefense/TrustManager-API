@@ -107,7 +107,7 @@ The configurable parms available are:
 
    **Note**: If you are using SQLite3 for the database (currently the only), you want to use a bind-mount for the database file, so it will persist across restarts
 
-   ```
+   ```bash
     --mount type=bind,src=/Users/david/instance,dst=/opt/TrustManager-API/instance/
    ```
 

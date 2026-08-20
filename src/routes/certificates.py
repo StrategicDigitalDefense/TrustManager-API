@@ -1,5 +1,5 @@
 #sys.path.append('../')
-from flask import Blueprint, request, jsonify, Response, url_for, send_file, send_from_directory, abort, redirect, current_app # type: ignore
+from flask import Blueprint, request, jsonify, Response, url_for, send_file, send_from_directory, abort, redirect, current_app, session # type: ignore
 from datetime import datetime
 from cryptography import x509 # type: ignore
 from cryptography.hazmat.primitives import hashes, serialization # type: ignore
@@ -20,6 +20,8 @@ import syslog
 import subprocess
 from functools import wraps
 from authlib.integrations.flask_client import OAuth # type: ignore
+import requests # type: ignore
+#from oauth.oidc import * # type: ignore
 
 
 syslog.openlog("TrustManager-API",0,syslog.LOG_LOCAL7)
@@ -27,20 +29,87 @@ syslog.openlog("TrustManager-API",0,syslog.LOG_LOCAL7)
 
 certificates_bp = Blueprint('certificates', __name__)
 
-# Initialize OAuth
-oauth = OAuth(current_app)
+# The client is bound to the application during startup, after its session key exists.
+oauth = OAuth()
 
-# Register the OIDC provider
-""" oauth.register(
-    name='oidc',
-    client_id=current_app.config['OIDC_CLIENT_ID'],
-    client_secret=current_app.config['OIDC_CLIENT_SECRET'],
-    server_metadata_url=current_app.config['OIDC_METADATA_URL'],
-    client_kwargs={
-        'scope': 'openid profile email roles'
-    }
-)
- """
+
+def configure_oidc(app):
+    oauth.init_app(app)
+    if app.config.get('AUTH'):
+        oauth.register(
+            name='oidc',
+            client_id=app.config['OIDC_CLIENT_ID'],
+            client_secret=app.config['OIDC_CLIENT_SECRET'],
+            server_metadata=app.config['OIDC_METADATA'],
+            client_kwargs={'scope': 'openid profile'},
+        )
+
+
+def require_trust_admin(function):
+    @wraps(function)
+    def decorated_function(*args, **kwargs):
+        if current_app.config.get('AUTH') and session.get('role') != 'TrustAdmin':
+            abort(403)
+        return function(*args, **kwargs)
+    return decorated_function
+
+
+def _has_trust_admin_role(claims):
+    for claim_name in ('groups', 'roles', 'role'):
+        claim_value = claims.get(claim_name)
+        if isinstance(claim_value, str):
+            values = [value.strip() for value in claim_value.replace(',', ' ').split()]
+        elif isinstance(claim_value, (list, tuple, set)):
+            values = claim_value
+        else:
+            continue
+        if 'TrustAdmin' in values:
+            return True
+    return False
+
+
+@certificates_bp.route('/login', methods=['GET'])
+def login():
+    if not current_app.config.get('AUTH'):
+        return redirect(url_for('certificates.admin_gui'))
+    return oauth.oidc.authorize_redirect(
+        url_for('certificates.oidc_callback', _external=True)
+    )
+
+
+@certificates_bp.route('/oidc/callback', methods=['GET'])
+def oidc_callback():
+    if not current_app.config.get('AUTH'):
+        abort(404)
+    if request.args.get('error'):
+        return jsonify({'error': request.args['error']}), 401
+
+    try:
+        if request.args.get('code'):
+            token = oauth.oidc.authorize_access_token()
+        elif request.args.get('id_token'):
+            token = {'id_token': request.args['id_token']}
+        else:
+            return jsonify({'error': 'OIDC callback did not contain a code or identity token'}), 400
+        claims = token.get('userinfo') or oauth.oidc.parse_id_token(token, nonce=None)
+    except Exception as error:
+        current_app.logger.warning('OIDC authentication failed: %s', error)
+        return jsonify({'error': 'OIDC authentication failed'}), 401
+
+    session.clear()
+    name = claims.get('name') or claims.get('username')
+    if name:
+        session['name'] = name
+    if _has_trust_admin_role(claims):
+        session['role'] = 'TrustAdmin'
+    return redirect(url_for('certificates.admin_gui'))
+
+
+@certificates_bp.route('/oidc/metadata', methods=['GET'])
+def oidc_metadata():
+    if not current_app.config.get('AUTH'):
+        abort(404)
+    return jsonify(current_app.config['OIDC_METADATA'])
 
 def parse_certificate(pem_data):
     syslog.syslog(syslog.LOG_INFO, "Calling parse_certificate() with PEM payload\n%s" % (pem_data))
@@ -109,7 +178,7 @@ def parse_certificate(pem_data):
  """
 
 @certificates_bp.route('/Certificate', methods=['PUT'])
-# @require_oidc_role('TrustAdmin')
+@require_trust_admin
 def add_certificate():
     pem_data = request.json.get('pem')
     if not pem_data:
@@ -161,7 +230,7 @@ def get_certificates():
     } for cert in certificates], 200
 
 @certificates_bp.route('/Trust', methods=['POST'])
-# @require_oidc_role('TrustAdmin')
+@require_trust_admin
 def trust_certificate():
     cert_id = request.json.get('id')
     syslog.syslog(syslog.LOG_DEBUG,"Calling trust_certificate() with certificate ID %i" % (cert_id))
@@ -186,7 +255,7 @@ def trust_certificate():
     return jsonify({'message': 'Certificate trusted successfully'}), 200
 
 @certificates_bp.route('/Distrust', methods=['POST'])
-# @require_oidc_role('TrustAdmin')
+@require_trust_admin
 def distrust_certificate():
     cert_id = request.json.get('id')
     if not cert_id:
@@ -307,7 +376,7 @@ BATCH_JOBS = {
 }
 
 @certificates_bp.route('/BatchJob', methods=['POST'])
-# @require_oidc_role('TrustAdmin')
+@require_trust_admin
 def run_batch_job():
     """
     Initiate a batch job by name.
@@ -384,6 +453,7 @@ def download_specific_gpo_zip(zipname):
     return send_file(zip_path, as_attachment=True)
 
 @certificates_bp.route('/Governance/Truststore', methods=['POST'])
+@require_trust_admin
 def add_governed_truststore():
     data = request.json
     try:
@@ -432,6 +502,7 @@ def add_governed_truststore():
         return jsonify({'error': f'Failed to add governed truststore: {str(e)}'}), 500
 
 @certificates_bp.route('/Governance/Truststore/<int:truststore_id>/notes', methods=['POST'])
+@require_trust_admin
 def append_truststore_notes(truststore_id):
     data = request.json
     try:
@@ -486,6 +557,7 @@ def get_governed_truststores():
     ])
 
 @certificates_bp.route('/Contacts', methods=['POST'])
+@require_trust_admin
 def create_contact():
     data = request.json
     try:
@@ -504,6 +576,7 @@ def create_contact():
         return jsonify({'error': f'Failed to create contact: {str(e)}'}), 500
 
 @certificates_bp.route('/Contacts/<int:contact_id>', methods=['PUT'])
+@require_trust_admin
 def edit_contact(contact_id):
     data = request.json
     try:
@@ -534,3 +607,29 @@ def list_contacts():
         }
         for contact in contacts
     ])
+
+""" @certificates_bp.route('/login', methods=['GET'])
+def login():
+    if current_app.config['AUTH'] == True:
+        if request.args.get('code'):
+            code = request.args.get('code')
+            try:
+                OIDCMetadata=requests.get(current_app.config['OIDC_METADATA_URL']).json()
+                token_endpoint = OIDCMetadata['token_endpoint']
+                accessToken=requests.post(token_endpoint, data={
+                    'grant_type': 'authorization_code',
+                    'code': code,
+                    #'redirect_uri': url_for('certificates.auth_callback', _external=True),
+                    'redirect_uri': url_for('certificates.login', _external=True),
+                    'client_id': current_app.config['OIDC_CLIENT_ID'],
+                    'client_secret': current_app.config['OIDC_CLIENT_SECRET']
+                }).json().get('access_token')
+                claims = jwt.decode(accessToken, options={"verify_signature": True})
+                return redirect(url_for('certificates.admin_gui'))
+            except Exception as e:
+                return jsonify({'error': f'Authentication failed: {str(e)}'}), 401
+        else:
+            redirect_uri = url_for('certificates.auth_callback', _external=True)
+            return oauth.oidc.authorize_redirect(redirect_uri)
+    else:
+        return jsonify({'message': 'Authentication is disabled.'}), 200 """

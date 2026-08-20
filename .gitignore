@@ -5,3 +5,5 @@ src/instance/certificates.db
 src/instance/certificates.db
 src/static/trusted_certs.pem
 src/static/trusted_certs.pfx
+src/__pycache__/app.cpython-313.pyc
+src/routes/__pycache__/certificates.cpython-313.pyc
