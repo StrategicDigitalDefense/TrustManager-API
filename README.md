@@ -9,7 +9,9 @@ flask-certificates-api
 ├── src
 │   ├── app.py                   # Entry point of the application
 │   ├── models
-│   │   └── certificates.py      # Defines the Certificate model
+│   │   ├── certificates.py      # Defines the Certificate model
+│   │   ├── contacts.py          # Defines governance contacts
+│   │   └── truststores.py       # Defines governed truststores and their certificates
 │   ├── routes
 │   │   └── certificates.py      # Contains route handlers for API endpoints
 │   ├── db
@@ -18,7 +20,7 @@ flask-certificates-api
 │   │   ├── assemble_jks.py          # Batch job: builds Java KeyStore from trusted certs
 │   │   ├── assemble_pfx.py          # Batch job: builds PKCS#12 (PFX) from trusted certs
 │   │   ├── assemble_trusted_pem.py  # Batch job: concatenates trusted certs as PEM
-│   │   ├── assemble_rpm.py          # Batch job: builds RPM package for trusted certs
+│   │   ├── assemble_rpm_truststore.py # Batch job: builds RPM package for trusted certs
 │   │   └── assemble_group_policy.py # Batch job: builds GPO/Group Policy truststore
 │   └── static
 │       ├── index.html           # Web-based admin GUI
@@ -51,7 +53,9 @@ architecture-beta
 
 ## Authentication and Authorization
 
-TrustManager-API can require AuthN|Z for non-GET endpoints. By default, AuthN|Z is disabled, but can be enabled and configured at run-time.  Authentication is handled by OpenID Connect, and authorization information is taken from the "Roles" assertion in the OIDC claim JWT (which needs to be a bearer-token). When AuthN|Z is enabled, all endpoints with write methods (PUT, POST) require the user to have the role **"TrustAdmin"**. If you turn-on AuthN|Z, then you need to specify the Auth parms; if you are missing any of the Auth parms, it will run with Auth disabled.
+TrustManager-API can require AuthN|Z for non-GET endpoints. By default, AuthN|Z is disabled, but can be enabled and configured at run-time. Authentication uses an OpenID Connect browser login at `/login`; identity and authorization are stored in the Flask session after the OIDC callback. A user needs the **`TrustAdmin`** role in a `groups`, `roles`, or `role` claim to use write endpoints (PUT or POST). If authentication is enabled but any OIDC configuration value is missing, the application starts with authentication disabled.
+
+When authentication is enabled, the identity provider returns users to `/oidc/callback`. The provider metadata currently in use is available at `/oidc/metadata` for troubleshooting.
 
 ## Setup Instructions
 
@@ -98,8 +102,8 @@ The configurable parms available are:
         -d \
         -p 5100:5100 \
         --env TRUSTMANAGER_DATABASE_URL \
-        --env RUSTMANAGER_REQUIRE_AUTH \
-        --env RUSTMANAGER_OIDC_CLIENT_ID \
+        --env TRUSTMANAGER_REQUIRE_AUTH \
+        --env TRUSTMANAGER_OIDC_CLIENT_ID \
         --env TRUSTMANAGER_OIDC_CLIENT_SECRET \
         --env TRUSTMANAGER_OIDC_METADATA_URL \
         trustmanager-api 
@@ -231,6 +235,36 @@ The configurable parms available are:
   ["assemble_jks", "assemble_pfx", "assemble_trusted_pem", "assemble_rpm", "assemble_group_policy"]
   ```
 
+### 11. Download a Generated Truststore
+
+* **Endpoint:** `GET /Truststore/{format}`
+* **Supported formats:** `jks`, `pfx`, `pem`, `rpm`
+* **Description:** Downloads the most recently generated truststore artifact in the requested format.
+
+### 12. Group Policy Truststores
+
+* **Endpoint:** `GET /Truststore/gpo`
+* **Description:** Downloads the most recent Group Policy backup ZIP.
+* **Additional endpoints:** `GET /Truststore/gpo/list` lists available backup ZIPs, and `GET /Truststore/gpo/{zipname}` downloads a named backup.
+
+### 13. Governance Contacts
+
+* **Endpoint:** `POST /Contacts`
+* **Description:** Creates a governance contact. Request JSON requires `name` and `contact`.
+* **Endpoint:** `GET /Contacts`
+* **Description:** Lists governance contacts.
+* **Endpoint:** `PUT /Contacts/{contact_id}`
+* **Description:** Updates either or both `name` and `contact` fields.
+
+### 14. Governed Truststores
+
+* **Endpoint:** `POST /Governance/Truststore`
+* **Description:** Records a truststore, its owner, and the certificates it contains. Request JSON requires `truststore_type` (`JKS`, `PKCS12`, `CAPI`, or `PEM File(s)`), `host`, `location`, `contact_id`, and `certificate_ids`; `notes` is optional.
+* **Endpoint:** `GET /Governance/Truststore`
+* **Description:** Lists governed truststores with their contact, certificates, notes, and review timestamp.
+* **Endpoint:** `POST /Governance/Truststore/{truststore_id}/notes`
+* **Description:** Appends a timestamped governance note and updates the review timestamp. Request JSON requires `notes`.
+
 ## Batch Jobs
 
 Batch jobs are provided in the `src/batch` directory to export trusted certificates in various formats:
@@ -244,7 +278,7 @@ Batch jobs are provided in the `src/batch` directory to export trusted certifica
 * **assemble_trusted_pem.py:**  
   Concatenates all trusted certificates into a single PEM file, with each certificate preceded by its subject and expiration date.
 
-* **assemble_rpm.py:**  
+* **assemble_rpm_truststore.py:**  
   Builds an RPM package that installs all trusted certificates as separate files in `/etc/pki/ca-trust/source/anchors` on a target machine, and runs `update-ca-trust enable` and `update-ca-trust extract` to update the system trust store. Each certificate file is installed with owner `root`, group `root`, and permissions `0644`.
 
 ## Examples
@@ -313,6 +347,8 @@ curl -X GET http://localhost:5100/BatchJob/list
 
 A simple web GUI is available for administrators at [http://localhost:5100/admin](http://localhost:5100/admin).
 
+Interactive OpenAPI documentation is available at [http://localhost:5100/swagger](http://localhost:5100/swagger). The GUI support assets are served at `/style.css` and `/favicon.ico`.
+
 ![TrustManager GUI](TrustManager-GUI.jpeg)
 ![TrustManager GUI - Governance](TrustManager-GUI-Governance.png)
 ![TrustManager GUI - Governance Example](TrustManager-GUI-Governance-Example.png)
@@ -324,6 +360,7 @@ A simple web GUI is available for administrators at [http://localhost:5100/admin
 * Trust/distrust certificates (with self-signed check)
 * Download truststore files (JKS, PFX, PEM, RPM)
 * View ATOM feed of trusted certificates
+* Maintain governance contacts and record deployed truststores with their certificate inventory and review notes
 
 **How to use:**
 
